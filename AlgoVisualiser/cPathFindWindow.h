@@ -1,6 +1,8 @@
 #pragma once
 #include<wx/wx.h>
 #include"DijkstraSP.h"
+#include"DFSimpl.h"
+#include"DijkstraThread.h"
 #include<string>
 #include<stdio.h>
 #include<map>
@@ -14,8 +16,6 @@ private:
 	const int MAP_ROWS = 15;
 	const int MAP_COLS = 15;
 	const enum MAP_TYPE{DIJKSTRA, DFS, BFS};
-
-
 	MAP_TYPE currentMapType;
 
 	vector<MAP_TYPE> mapTypeMapping = {
@@ -34,12 +34,19 @@ private:
 		{BFS, [this]() -> void {this->setupBfs(); }}
 	};
 
+	map < MAP_TYPE, function<void()> > mapTypeStart = {
+		{DIJKSTRA, [this]() -> void {this->runDijkstra(); }},
+		{DFS, [this]() -> void {this->runDfs(); }},
+		{BFS, [this]() -> void {this->runBfs(); }}
+	};
+
 	DijkstraSP* dijkstraImpl = nullptr;
-	
+	DFSimpl* dfsImpl = nullptr;
 
 	int source = -1;
+	bool running = false;
 
-	vector<int> *dijkstraMapCost = nullptr;
+	vector<vector<int>> *dijkstraMapCost = nullptr;
 	wxPanel* frameContent = nullptr;
 	wxToolBar* algorithmTools = nullptr;
 	wxChoice* algorithmChoice = nullptr;
@@ -54,6 +61,7 @@ private:
 	bool choosingSource = false;
 	//bool choosingDestination = false;
 
+	DijkstraThread* someThread = nullptr;
 
 	void setupMap();
 	void setupAlgorithmList();
@@ -63,13 +71,20 @@ private:
 	void setupBfs();
 
 
-
+	void runAlgorithm(wxCommandEvent& evt);
+	void runDijkstra();
+	void runDfs();
+	void runBfs();
 	void dijkstraButtonClickAction(wxButton* buttonClicked);
+
+	void disableMapButtons();
+	void enableMapButtons();
 
 public:
 
 	cPathFindWindow();
 	~cPathFindWindow();
+	void onThreadRun(wxCommandEvent& evt);
 	void choiceSelected(wxCommandEvent& evt);
 	void mapButtonClicked(wxCommandEvent& evt);
 	void generateRandomCost(wxCommandEvent& evt);

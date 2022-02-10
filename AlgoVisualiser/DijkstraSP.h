@@ -8,16 +8,21 @@ class DijkstraSP
 {
 
 private:
-	int numOfVertexes;
+	int VERTEX_COUNT;
 	vector<vector<pair<int,int>>>* adjList = nullptr;
-	wxThread* spThread = nullptr;
+	vector<vector<int>> costList;
+	wxButton** mapButtons = nullptr;
+
+private:
+	void addNeighbours(int i, int j);
+	void applyAdjList();
+	bool isSafe(int i, int j, const int ROW_LIMIT, const int COL_LIMIT);
 
 public:
-	DijkstraSP(vector<vector<int>>* costList);
+	DijkstraSP(wxButton** buttons, int VERTEX_COUNT);
 	~DijkstraSP();
 
+	void setCostList(vector<vector<int>>& costList);
 	void runDijkstraAlgorithm(int src);
-	bool isSafe(int i, int j, const int ROW_LIMIT, const int COL_LIMIT);
-	void addNeighbours(int i, int j, vector<vector<int>>& costList);
 };
 

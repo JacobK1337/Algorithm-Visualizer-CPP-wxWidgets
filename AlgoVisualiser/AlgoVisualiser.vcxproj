@@ -23,14 +23,18 @@
     <ClInclude Include="cBacktrackWindow.h" />
     <ClInclude Include="cMain.h" />
     <ClInclude Include="cPathFindWindow.h" />
+    <ClInclude Include="DFSimpl.h" />
     <ClInclude Include="DijkstraSP.h" />
+    <ClInclude Include="DijkstraThread.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cApp.cpp" />
     <ClCompile Include="cBacktrackWindow.cpp" />
     <ClCompile Include="cMain.cpp" />
     <ClCompile Include="cPathFindWindow.cpp" />
+    <ClCompile Include="DFSimpl.cpp" />
     <ClCompile Include="DijkstraSP.cpp" />
+    <ClCompile Include="DijkstraThread.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
