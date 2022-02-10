@@ -25,7 +25,7 @@
     <ClInclude Include="cPathFindWindow.h" />
     <ClInclude Include="DFSimpl.h" />
     <ClInclude Include="DijkstraSP.h" />
-    <ClInclude Include="DijkstraThread.h" />
+    <ClInclude Include="SideThread.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cApp.cpp" />
@@ -34,7 +34,7 @@
     <ClCompile Include="cPathFindWindow.cpp" />
     <ClCompile Include="DFSimpl.cpp" />
     <ClCompile Include="DijkstraSP.cpp" />
-    <ClCompile Include="DijkstraThread.cpp" />
+    <ClCompile Include="SideThread.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -1,7 +1,7 @@
 #include "cPathFindWindow.h"
 
 wxBEGIN_EVENT_TABLE(cPathFindWindow, wxFrame)
-//EVT_COMMAND(123, wxEVT_MYTHREAD, cPathFindWindow::onThreadRun)
+EVT_COMMAND(5555, wxEVT_THREAD_END, cPathFindWindow::onThreadEnd)
 wxEND_EVENT_TABLE()
 
 cPathFindWindow::cPathFindWindow() : wxFrame(nullptr, wxID_ANY, "Pathfinding Algorithms", wxPoint(10, 10), wxSize(1600, 1000)) {
@@ -52,7 +52,7 @@ void cPathFindWindow::setupToolbar() {
 	}
 
 	startButton = new wxButton(algorithmTools, wxID_ANY, "Start", wxDefaultPosition, wxSize(400, 100));
-	startButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &cPathFindWindow::runAlgorithm, this);
+	startButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &cPathFindWindow::onStart, this);
 
 	generateCostButton = new wxButton(algorithmTools, wxID_ANY, "Generate Cost", wxDefaultPosition, wxSize(400, 100));
 	generateCostButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &cPathFindWindow::generateRandomCost, this);
@@ -79,7 +79,7 @@ void cPathFindWindow::choiceSelected(wxCommandEvent& evt) {
 	int selected = currentChoice->GetCurrentSelection();
 
 	MAP_TYPE selectedMapType = mapTypeMapping[selected];
-	
+
 	currentMapType = selectedMapType;
 
 	mapTypeSetup[currentMapType]();
@@ -135,17 +135,8 @@ void cPathFindWindow::setupBfs() {
 
 void cPathFindWindow::mapButtonClicked(wxCommandEvent& evt) {
 
-	wxButton* currentButton = (wxButton*)evt.GetEventObject();
-
-	switch (currentMapType) {
-	case DIJKSTRA:
-		cPathFindWindow::dijkstraButtonClickAction(currentButton);
-		break;
-	case DFS:
-		break;
-	case BFS:
-		break;
-	}
+	wxButton* mapButtonClicked = (wxButton*)evt.GetEventObject();
+	mapTypeOnClick[currentMapType](mapButtonClicked);
 
 }
 
@@ -168,11 +159,17 @@ void cPathFindWindow::dijkstraButtonClickAction(wxButton* buttonClicked) {
 			int j = FIRST_DIM_EQ % MAP_COLS;
 			(*dijkstraMapCost)[i][j] ++;
 			buttonClicked->SetLabelText(to_string((*dijkstraMapCost)[i][j]));
-
 		}
 		break;
 
 	}
+}
+void cPathFindWindow::dfsButtonClickAction(wxButton* buttonClicked) {
+
+}
+
+void cPathFindWindow::bfsButtonClickAction(wxButton* buttonClicked) {
+
 }
 
 void cPathFindWindow::sourceSetButtonClicked(wxCommandEvent& evt) {
@@ -198,68 +195,60 @@ void cPathFindWindow::generateRandomCost(wxCommandEvent& evt) {
 	//dijkstraImpl->setCostList(*dijkstraMapCost);
 }
 
-void cPathFindWindow::runAlgorithm(wxCommandEvent& evt) {
+void cPathFindWindow::onStart(wxCommandEvent& evt) {
 
-	
+	switch (running) {
+	case false:
+		cPathFindWindow::runAlgorithm();
+		break;
+
+	case true:
+		cPathFindWindow::stopAlgorithm();
+		break;
+	}
+}
+
+void cPathFindWindow::runAlgorithm() {
 	mapTypeStart[currentMapType]();
 
+	cPathFindWindow::setRunningState(running = true);
+	cPathFindWindow::disableMapButtons();
+}
+
+void cPathFindWindow::stopAlgorithm() {
+
+	someThread->Kill();
+	mapTypeSetup[currentMapType]();
+	source = -1;
+
+	cPathFindWindow::setRunningState(running = false);
+	cPathFindWindow::enableMapButtons();
 }
 
 void cPathFindWindow::runDijkstra() {
 	dijkstraImpl->setCostList(*dijkstraMapCost);
 
-	switch (running) {
-	case false:
-		running = true;
-		startButton->SetLabelText("Stop");
-		someThread = new DijkstraThread(this, [this]() -> void {dijkstraImpl->runDijkstraAlgorithm(source); });
-		disableMapButtons();
-
-		someThread->Create();
-		someThread->Run();
-		break;
-
-	case true:
-		running = false;
-		startButton->SetLabelText("Start");
-		someThread->Kill();
-		cPathFindWindow::setupDijkstraSp();
-		enableMapButtons();
-
-		source = -1;
-		break;
-
-	}
-
+	someThread = new SideThread(this, [this]() -> void {dijkstraImpl->runDijkstraAlgorithm(source); });
+	someThread->Create();
+	someThread->Run();
 }
 
 void cPathFindWindow::runDfs() {
-	
-	switch (running) {
-	case false:
-		running = true;
-		startButton->SetLabelText("Stop");
-		someThread = new DijkstraThread(this, [this]() -> void {dfsImpl->runDfsAlgorithm(source); });
-		disableMapButtons();
 
-		someThread->Create();
-		someThread->Run();
-		break;
-	case true:
-		running = false;
-		startButton->SetLabelText("Start");
-		someThread->Kill();
-		cPathFindWindow::setupDfs();
-		enableMapButtons();
-
-		source = -1;
-
-		break;
-	}
+	someThread = new SideThread(this, [this]() -> void {dfsImpl->runDfsAlgorithm(source); });
+	someThread->Create();
+	someThread->Run();
 }
 
 void cPathFindWindow::runBfs() {
 
+}
+
+
+void cPathFindWindow::onThreadEnd(wxCommandEvent& evt) {
+	cPathFindWindow::enableMapButtons();
+	running = false;
+	startButton->SetLabelText("Start");
 }
 
 void cPathFindWindow::swapSources(const int newSourceInd) {
@@ -279,8 +268,22 @@ void cPathFindWindow::swapSources(const int newSourceInd) {
 }
 
 
+void cPathFindWindow::setRunningState(bool isRunning) {
+
+	switch (isRunning) {
+	case true:
+		cPathFindWindow::disableMapButtons();
+		startButton->SetLabelText("Stop");
+		break;
+	case false:
+		cPathFindWindow::enableMapButtons();
+		startButton->SetLabelText("Start");
+		break;
+	}
+}
+
 void cPathFindWindow::disableMapButtons() {
-	for(int i = 0; i < MAP_ROWS; i++)
+	for (int i = 0; i < MAP_ROWS; i++)
 		for (int j = 0; j < MAP_COLS; j++) {
 			const int FIRST_DIM_EQ = i * MAP_COLS + j;
 			mapButtons[FIRST_DIM_EQ]->Disable();

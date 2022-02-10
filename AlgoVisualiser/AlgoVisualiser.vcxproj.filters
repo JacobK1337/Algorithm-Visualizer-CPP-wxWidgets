@@ -30,7 +30,7 @@
     <ClInclude Include="DijkstraSP.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="DijkstraThread.h">
+    <ClInclude Include="SideThread.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
     <ClInclude Include="DFSimpl.h">
@@ -53,7 +53,7 @@
     <ClCompile Include="DijkstraSP.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="DijkstraThread.cpp">
+    <ClCompile Include="SideThread.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
     <ClCompile Include="DFSimpl.cpp">
