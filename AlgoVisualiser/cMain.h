@@ -4,7 +4,6 @@
 #include<vector>
 #include "cPathFindWindow.h"
 #include "cBacktrackWindow.h"
-using namespace std;
 
 
 class cMain : public wxFrame
@@ -12,8 +11,8 @@ class cMain : public wxFrame
 private:
 
 
-	vector<string> ALGO_CATEGORIES;
-	vector<function <wxFrame* ()> > ALGO_FRAMES;
+	std::vector<std::string> ALGO_CATEGORIES;
+	std::vector<function <wxFrame* ()> > ALGO_FRAMES;
 
 	wxPanel* panelContent = nullptr;
 	wxStaticText* welcomeHeader = nullptr;

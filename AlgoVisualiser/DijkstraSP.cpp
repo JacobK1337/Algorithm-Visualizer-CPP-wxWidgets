@@ -1,4 +1,5 @@
 #include "DijkstraSP.h"
+using namespace std;
 
 DijkstraSP::DijkstraSP(wxButton** buttons, const int VERTEX_COUNT) {
 
@@ -15,14 +16,16 @@ void DijkstraSP::runDijkstraAlgorithm(int src) {
 	priority_queue<pair<int, int>, vector<pair<int, int>>, greater<> > currentDistances;
 
 	vector<int> shortestDistance(VERTEX_COUNT, INT_MAX);
+	ancestor = new vector<int>(VERTEX_COUNT, -1);
 
 	shortestDistance[src] = 0;
+	(*ancestor)[src] = src;
+
 	currentDistances.push(make_pair(0, src));
 	while (!currentDistances.empty()) {
+
 		int curr = currentDistances.top().second;
 		currentDistances.pop();
-		//mapButtons[curr]->SetBackgroundColour(wxColour(0, 0, 0));
-		//proccessing neighbours
 		for (int i = 0; i < (*adjList)[curr].size(); i++) {
 
 			int v = (*adjList)[curr][i].first;
@@ -31,6 +34,7 @@ void DijkstraSP::runDijkstraAlgorithm(int src) {
 			if (shortestDistance[v] > shortestDistance[curr] + cost) {
 				wxMilliSleep(100);
 				shortestDistance[v] = shortestDistance[curr] + cost;
+				(*ancestor)[v] = curr;
 				currentDistances.push(make_pair(shortestDistance[v], v));
 				mapButtons[v]->SetBackgroundColour(wxColour(204, 204, 0));
 				mapButtons[v]->SetLabelText(to_string(shortestDistance[v]));
@@ -40,6 +44,17 @@ void DijkstraSP::runDijkstraAlgorithm(int src) {
 
 }
 
+void DijkstraSP::showPathToSource(int t_src, int t_vertexFrom) {
+
+	int temp = t_vertexFrom;
+
+	while (temp != t_src) {
+		mapButtons[temp]->SetBackgroundColour(wxColour(51, 255, 51));
+		wxMilliSleep(100);
+
+		temp = (*ancestor)[temp];
+	}
+}
 
 void DijkstraSP::setCostList(vector<vector<int>>& costList) {
 	this->costList = costList;
@@ -79,4 +94,5 @@ bool DijkstraSP::isSafe(int i, int j, const int ROW_LIMIT, const int COL_LIMIT) 
 
 DijkstraSP::~DijkstraSP() {
 	delete adjList;
+	delete ancestor;
 }

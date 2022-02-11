@@ -2,15 +2,15 @@
 #include<wx/wx.h>
 #include<vector>
 #include<queue>
-using namespace std;
 
 class DijkstraSP
 {
 
 private:
 	int VERTEX_COUNT;
-	vector<vector<pair<int,int>>>* adjList = nullptr;
-	vector<vector<int>> costList;
+	std::vector<std::vector<std::pair<int,int>>>* adjList = nullptr;
+	std::vector<int>* ancestor = nullptr;
+	std::vector<std::vector<int>> costList;
 	wxButton** mapButtons = nullptr;
 
 private:
@@ -22,7 +22,8 @@ public:
 	DijkstraSP(wxButton** buttons, int VERTEX_COUNT);
 	~DijkstraSP();
 
-	void setCostList(vector<vector<int>>& costList);
+	void setCostList(std::vector<std::vector<int>>& costList);
 	void runDijkstraAlgorithm(int src);
+	void showPathToSource(int t_src, int t_vertexFrom);
 };
 

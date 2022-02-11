@@ -1,4 +1,5 @@
 #include "DFSimpl.h"
+using namespace std;
 
 DFSimpl::DFSimpl(wxButton** buttons, int MAP_ROWS, int MAP_COLS) {
 	this->MAP_ROWS = MAP_ROWS;

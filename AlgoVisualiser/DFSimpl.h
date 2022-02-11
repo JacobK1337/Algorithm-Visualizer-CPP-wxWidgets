@@ -1,7 +1,6 @@
 #pragma once
 #include<wx/wx.h>
 #include<vector>
-using namespace std;
 
 class DFSimpl
 {
@@ -9,8 +8,8 @@ class DFSimpl
 private:
 	int MAP_ROWS;
 	int MAP_COLS;
-	vector<vector<int>>* adjList = nullptr;
-	vector<bool>* visList = nullptr;
+	std::vector<std::vector<int>>* adjList = nullptr;
+	std::vector<bool>* visList = nullptr;
 	wxButton** mapButtons = nullptr;
 
 private:

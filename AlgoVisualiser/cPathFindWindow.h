@@ -2,22 +2,40 @@
 #include<wx/wx.h>
 #include"DijkstraSP.h"
 #include"DFSimpl.h"
+#include"BFSimpl.h"
 #include"SideThread.h"
 #include<string>
-#include<stdio.h>
 #include<map>
-using namespace std;
 
 class cPathFindWindow : wxFrame
 {
-	
-
 private:
 
 	const int MAP_ROWS = 15;
 	const int MAP_COLS = 15;
 	const enum MAP_TYPE{DIJKSTRA, DFS, BFS};
+	const enum MAP_STATE{IDLE, CHOOSING_SOURCE, RUNNING, FINISHED};
+	int source = -1;
+
 	MAP_TYPE currentMapType;
+	MAP_STATE currentMapState = IDLE;
+
+	unique_ptr<DijkstraSP> dijkstraImpl = nullptr;
+	unique_ptr<vector<vector<int>>> dijkstraMapCost = nullptr;
+
+	unique_ptr<DFSimpl> dfsImpl = nullptr;
+	unique_ptr<BFSimpl> bfsImpl = nullptr;
+
+	wxPanel* frameContent = nullptr;
+	wxButton** mapButtons = nullptr;
+
+	wxToolBar* algorithmTools = nullptr;
+	wxChoice* algorithmChoice = nullptr;
+	wxButton* startButton = nullptr;
+	wxButton* sourceButton = nullptr;
+	wxButton* generateCostButton = nullptr;
+
+	SideThread* someThread = nullptr;
 
 	vector<MAP_TYPE> mapTypeMapping = {
 		DIJKSTRA, DFS, BFS
@@ -47,29 +65,7 @@ private:
 		{BFS, [this](wxButton* button) -> void {this->bfsButtonClickAction(button); }}
 	};
 
-	DijkstraSP* dijkstraImpl = nullptr;
-	DFSimpl* dfsImpl = nullptr;
-
-	int source = -1;
-	bool running = false;
-
-	vector<vector<int>> *dijkstraMapCost = nullptr;
-	wxPanel* frameContent = nullptr;
-	wxToolBar* algorithmTools = nullptr;
-	wxChoice* algorithmChoice = nullptr;
-
-	wxButton* startButton = nullptr;
-	wxButton* stopButton = nullptr;
-	wxButton* sourceButton = nullptr;
-	wxButton* generateCostButton = nullptr;
-
-	wxButton** mapButtons = nullptr;
-
-	bool choosingSource = false;
-	//bool choosingDestination = false;
-
-	SideThread* someThread = nullptr;
-
+private:
 	void setupMap();
 	void setupAlgorithmList();
 	void setupToolbar();
@@ -77,27 +73,21 @@ private:
 	void setupDfs();
 	void setupBfs();
 
-
 	void onStart(wxCommandEvent& evt);
 	void runAlgorithm();
 	void stopAlgorithm();
-
 	void runDijkstra();
 	void runDfs();
 	void runBfs();
 
-	void dijkstraButtonClickAction(wxButton* buttonClicked);
-	void dfsButtonClickAction(wxButton* buttonClicked);
-	void bfsButtonClickAction(wxButton* buttonClicked);
+	void dijkstraButtonClickAction(wxButton* t_buttonClicked);
+	void dfsButtonClickAction(wxButton* t_buttonClicked);
+	void bfsButtonClickAction(wxButton* t_buttonClicked);
 
-	void setRunningState(bool isRunning);
+	void setMapState(MAP_STATE t_mapState);
 	void disableMapButtons();
 	void enableMapButtons();
 
-public:
-
-	cPathFindWindow();
-	~cPathFindWindow();
 	void onThreadRun(wxCommandEvent& evt);
 	void onThreadEnd(wxCommandEvent& evt);
 
@@ -105,8 +95,11 @@ public:
 	void mapButtonClicked(wxCommandEvent& evt);
 	void generateRandomCost(wxCommandEvent& evt);
 	void sourceSetButtonClicked(wxCommandEvent& evt);
-	void swapSources(const int newSourceInd);
+	void assignSource(const int t_newSourceInd);
+
+public:
+	cPathFindWindow();
+	~cPathFindWindow();
 	wxDECLARE_EVENT_TABLE();
-	
 };
 

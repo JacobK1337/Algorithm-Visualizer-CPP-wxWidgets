@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BFSimpl.h" />
     <ClInclude Include="cApp.h" />
     <ClInclude Include="cBacktrackWindow.h" />
     <ClInclude Include="cMain.h" />
@@ -28,6 +29,7 @@
     <ClInclude Include="SideThread.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BFSimpl.cpp" />
     <ClCompile Include="cApp.cpp" />
     <ClCompile Include="cBacktrackWindow.cpp" />
     <ClCompile Include="cMain.cpp" />

@@ -44,12 +44,12 @@ void cMain::OnCategoryButtonClick(wxCommandEvent& evt) {
 	
 	const int ID = evt.GetId() - 10000;
 	ALGO_FRAMES[ID]()->Show();
-
 }
 
 
 void cMain::initFrames() {
-
+	
+	
 	// Pathfinding frame
 	ALGO_FRAMES.push_back([this]() ->
 		wxFrame* {return (wxFrame*) new cPathFindWindow(); });
@@ -65,6 +65,6 @@ void cMain::initFrames() {
 }
 
 cMain::~cMain() {
-
+	delete algoCategoryButtons;
 }
 
