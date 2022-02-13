@@ -8,28 +8,58 @@ DFSimpl::DFSimpl(wxButton** buttons, int MAP_ROWS, int MAP_COLS) {
 	mapButtons = buttons;
 	adjList = new vector<vector<int>>(MAP_ROWS * MAP_COLS, vector < int >());
 	visList = new vector<bool>(MAP_ROWS * MAP_COLS, false);
-
+	ancestor = new vector<int>(MAP_ROWS * MAP_COLS, -1);
 	
 }
 
-void DFSimpl::runDfsAlgorithm(int src) {
+void DFSimpl::setSource(const int src) {
+	source = src;
+}
+int DFSimpl::getSource() {
+	return source;
+}
+
+void DFSimpl::setBlockedCells(vector<bool>& blockedCells) {
+	mapBlockedCells = blockedCells;
+}
+
+void DFSimpl::runDfsAlgorithm() {
 	DFSimpl::applyAdjList();
-	dfs(src);
+	(*ancestor)[source] = source;
+	dfs(source);
 }
 
 void DFSimpl::dfs(int src) {
 
 	(*visList)[src] = true;
-	mapButtons[src]->SetBackgroundColour(wxColour(204, 204, 0));
+	if(src != source)
+		mapButtons[src]->SetBackgroundColour(wxColour(204, 204, 0));
+
 	wxMilliSleep(100);
 	for (int i = 0; i < (*adjList)[src].size(); i++) {
 		int curr = (*adjList)[src][i];
 
-		if (!(*visList)[curr])
+		if (!(*visList)[curr]) {
+			(*ancestor)[curr] = src;
 			dfs(curr);
+		}
 	}
 
 }
+
+void DFSimpl::showPathToSource(const int t_vertexFrom) {
+
+	int temp = t_vertexFrom;
+
+	while (temp != source) {
+		mapButtons[temp]->SetBackgroundColour(wxColour(51, 255, 51));
+		wxMilliSleep(100);
+
+		temp = (*ancestor)[temp];
+	}
+
+}
+
 void DFSimpl::applyAdjList() {
 	for (int i = 0; i < MAP_ROWS; i++)
 		for (int j = 0; j < MAP_COLS; j++) {
@@ -45,7 +75,9 @@ void DFSimpl::addNeighbours(int i, int j) {
 			if (!(x == 0 && y == 0) && isSafe(i + x, j + y, MAP_ROWS, MAP_COLS)) {
 				int currentCellNum = i * MAP_COLS + j;
 				int neighCellNum = (i + x) * MAP_COLS + (j + y);
-				(*adjList)[currentCellNum].push_back(neighCellNum);
+
+				if(!mapBlockedCells[currentCellNum] && !mapBlockedCells[neighCellNum])
+					(*adjList)[currentCellNum].push_back(neighCellNum);
 				
 
 			}
@@ -61,4 +93,5 @@ bool DFSimpl::isSafe(int i, int j, const int ROW_LIMIT, const int COL_LIMIT) {
 DFSimpl::~DFSimpl() {
 	delete adjList;
 	delete visList;
+	delete ancestor;
 }

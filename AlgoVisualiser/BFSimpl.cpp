@@ -11,10 +11,15 @@ BFSimpl::BFSimpl(wxButton** buttons, int MAP_ROWS, int MAP_COLS) {
 
 }
 
-
-void BFSimpl::runBfsAlgorithm(int src) {
+void BFSimpl::setSource(const int src){
+	source = src;
+}
+int BFSimpl::getSource() {
+	return source;
+}
+void BFSimpl::runBfsAlgorithm() {
 	BFSimpl::applyAdjList();
-	bfs(src);
+	bfs(source);
 }
 
 void BFSimpl::bfs(int src) {

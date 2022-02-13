@@ -15,19 +15,20 @@ private:
 	const int MAP_COLS = 15;
 	const enum MAP_TYPE{DIJKSTRA, DFS, BFS};
 	const enum MAP_STATE{IDLE, CHOOSING_SOURCE, RUNNING, FINISHED};
-	int source = -1;
-
 	MAP_TYPE currentMapType;
 	MAP_STATE currentMapState = IDLE;
 
-	unique_ptr<DijkstraSP> dijkstraImpl = nullptr;
-	unique_ptr<vector<vector<int>>> dijkstraMapCost = nullptr;
 
-	unique_ptr<DFSimpl> dfsImpl = nullptr;
-	unique_ptr<BFSimpl> bfsImpl = nullptr;
 
+	//algorithm implementations
+	unique_ptr<DijkstraSP> dijkstraImpl;
+	unique_ptr<DFSimpl> dfsImpl;
+	unique_ptr<BFSimpl> bfsImpl;
+
+	//wxWidgets elements
 	wxPanel* frameContent = nullptr;
 	wxButton** mapButtons = nullptr;
+	vector<bool> mapButtonBlocked;
 
 	wxToolBar* algorithmTools = nullptr;
 	wxChoice* algorithmChoice = nullptr;
@@ -35,8 +36,10 @@ private:
 	wxButton* sourceButton = nullptr;
 	wxButton* generateCostButton = nullptr;
 
+	//side thread to proccess algorithms
 	SideThread* someThread = nullptr;
 
+	//algorithm setup/description/start/onclick maps
 	vector<MAP_TYPE> mapTypeMapping = {
 		DIJKSTRA, DFS, BFS
 	};
@@ -87,15 +90,17 @@ private:
 	void setMapState(MAP_STATE t_mapState);
 	void disableMapButtons();
 	void enableMapButtons();
+	void fixOldSource(const int t_oldSource, const int t_valueToSet);
 
+	void assignAlgorithmThread(const function<void()> &runFunction);
 	void onThreadRun(wxCommandEvent& evt);
 	void onThreadEnd(wxCommandEvent& evt);
 
 	void choiceSelected(wxCommandEvent& evt);
 	void mapButtonClicked(wxCommandEvent& evt);
+	void rightButtonClicked(wxMouseEvent& evt);
 	void generateRandomCost(wxCommandEvent& evt);
 	void sourceSetButtonClicked(wxCommandEvent& evt);
-	void assignSource(const int t_newSourceInd);
 
 public:
 	cPathFindWindow();

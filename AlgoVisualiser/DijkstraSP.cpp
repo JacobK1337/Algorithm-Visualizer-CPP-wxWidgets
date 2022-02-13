@@ -6,11 +6,21 @@ DijkstraSP::DijkstraSP(wxButton** buttons, const int VERTEX_COUNT) {
 	this->VERTEX_COUNT = VERTEX_COUNT;
 	mapButtons = buttons;
 	adjList = new vector<vector<pair<int, int>>>(VERTEX_COUNT, vector < pair<int, int> >());
-
 }
 
+void DijkstraSP::setSource(const int src) {
+	source = src;
+}
 
-void DijkstraSP::runDijkstraAlgorithm(int src) {
+int DijkstraSP::getSource() {
+	return source;
+}
+
+void DijkstraSP::setBlockedCells(vector<bool>& blockedButtons) {
+	mapButtonBlocked = blockedButtons;
+}
+
+void DijkstraSP::runDijkstraAlgorithm() {
 	DijkstraSP::applyAdjList();
 
 	priority_queue<pair<int, int>, vector<pair<int, int>>, greater<> > currentDistances;
@@ -18,10 +28,10 @@ void DijkstraSP::runDijkstraAlgorithm(int src) {
 	vector<int> shortestDistance(VERTEX_COUNT, INT_MAX);
 	ancestor = new vector<int>(VERTEX_COUNT, -1);
 
-	shortestDistance[src] = 0;
-	(*ancestor)[src] = src;
+	shortestDistance[source] = 0;
+	(*ancestor)[source] = source;
 
-	currentDistances.push(make_pair(0, src));
+	currentDistances.push(make_pair(0, source));
 	while (!currentDistances.empty()) {
 
 		int curr = currentDistances.top().second;
@@ -44,22 +54,30 @@ void DijkstraSP::runDijkstraAlgorithm(int src) {
 
 }
 
-void DijkstraSP::showPathToSource(int t_src, int t_vertexFrom) {
+void DijkstraSP::showPathToSource(int t_vertexFrom) {
 
 	int temp = t_vertexFrom;
 
-	while (temp != t_src) {
+	while (temp != source) {
 		mapButtons[temp]->SetBackgroundColour(wxColour(51, 255, 51));
 		wxMilliSleep(100);
 
 		temp = (*ancestor)[temp];
 	}
+
 }
 
 void DijkstraSP::setCostList(vector<vector<int>>& costList) {
 	this->costList = costList;
 }
 
+void DijkstraSP::incrementCellCost(const int i, const int j) {
+	costList[i][j] ++;
+}
+
+int DijkstraSP::checkCellCost(const int i, const int j) {
+	return costList[i][j];
+}
 
 void DijkstraSP::applyAdjList() {
 	for (int i = 0; i < costList.size(); i++) {
@@ -79,7 +97,9 @@ void DijkstraSP::addNeighbours(int i, int j) {
 				int currentCellNum = i * MAP_COLS + j;
 				int neighCellNum = (i + x) * MAP_COLS + (j + y);
 				int neighCellCost = costList[i + x][j + y];
-				(*adjList)[currentCellNum].push_back(make_pair(neighCellNum, neighCellCost));
+
+				if(!mapButtonBlocked[currentCellNum] && !mapButtonBlocked[neighCellNum])
+					(*adjList)[currentCellNum].push_back(make_pair(neighCellNum, neighCellCost));
 				
 			}
 		}
