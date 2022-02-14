@@ -24,8 +24,11 @@
     <ClInclude Include="cBacktrackWindow.h" />
     <ClInclude Include="cMain.h" />
     <ClInclude Include="cPathFindWindow.h" />
+    <ClInclude Include="declared_events.h" />
+    <ClInclude Include="defined_typenames.h" />
     <ClInclude Include="DFSimpl.h" />
     <ClInclude Include="DijkstraSP.h" />
+    <ClInclude Include="KruskalMST.h" />
     <ClInclude Include="SideThread.h" />
   </ItemGroup>
   <ItemGroup>
@@ -36,6 +39,7 @@
     <ClCompile Include="cPathFindWindow.cpp" />
     <ClCompile Include="DFSimpl.cpp" />
     <ClCompile Include="DijkstraSP.cpp" />
+    <ClCompile Include="KruskalMST.cpp" />
     <ClCompile Include="SideThread.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

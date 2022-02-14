@@ -1,14 +1,16 @@
 #include "DFSimpl.h"
-using namespace std;
 
-DFSimpl::DFSimpl(wxButton** buttons, int MAP_ROWS, int MAP_COLS) {
+using namespace std;
+using namespace def_type;
+DFSimpl::DFSimpl(int MAP_ROWS, int MAP_COLS, wxEvtHandler* handler) : parentEvtHandler(handler) {
+
 	this->MAP_ROWS = MAP_ROWS;
 	this->MAP_COLS = MAP_COLS;
 
-	mapButtons = buttons;
-	adjList = new vector<vector<int>>(MAP_ROWS * MAP_COLS, vector < int >());
-	visList = new vector<bool>(MAP_ROWS * MAP_COLS, false);
-	ancestor = new vector<int>(MAP_ROWS * MAP_COLS, -1);
+
+	adjList = make_unique<vector2DInt>(MAP_ROWS * MAP_COLS, vector1DInt());
+	visList = make_unique<vector1DBool>(MAP_ROWS * MAP_COLS, false);
+	ancestor = make_unique<vector1DInt>(MAP_ROWS * MAP_COLS, -1);
 	
 }
 
@@ -32,8 +34,12 @@ void DFSimpl::runDfsAlgorithm() {
 void DFSimpl::dfs(int src) {
 
 	(*visList)[src] = true;
-	if(src != source)
-		mapButtons[src]->SetBackgroundColour(wxColour(204, 204, 0));
+	if (src != source) {
+		wxCommandEvent mapUpdateEvt(wxEVT_MAP_UPDATE_REQUEST, MAP_UPDATE_REQUEST_ID);
+		mapUpdateEvt.SetInt(src);
+		wxPostEvent(parentEvtHandler, mapUpdateEvt);
+	}
+		//mapButtons[src]->SetBackgroundColour(wxColour(204, 204, 0));
 
 	wxMilliSleep(100);
 	for (int i = 0; i < (*adjList)[src].size(); i++) {
@@ -52,7 +58,11 @@ void DFSimpl::showPathToSource(const int t_vertexFrom) {
 	int temp = t_vertexFrom;
 
 	while (temp != source) {
-		mapButtons[temp]->SetBackgroundColour(wxColour(51, 255, 51));
+
+		wxCommandEvent mapUpdateEvt(wxEVT_MAP_RECON_REQUEST, MAP_RECON_REQUEST_ID);
+		mapUpdateEvt.SetInt(temp);
+		wxPostEvent(parentEvtHandler, mapUpdateEvt);
+
 		wxMilliSleep(100);
 
 		temp = (*ancestor)[temp];
@@ -91,7 +101,5 @@ bool DFSimpl::isSafe(int i, int j, const int ROW_LIMIT, const int COL_LIMIT) {
 
 }
 DFSimpl::~DFSimpl() {
-	delete adjList;
-	delete visList;
-	delete ancestor;
+	
 }

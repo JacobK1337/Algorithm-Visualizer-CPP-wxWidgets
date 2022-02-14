@@ -1,0 +1,6 @@
+#pragma once
+#include<wx/wx.h>
+
+DECLARE_EVENT_TYPE(wxEVT_MAP_UPDATE_REQUEST, -1)
+DECLARE_EVENT_TYPE(wxEVT_MAP_RECON_REQUEST, -1)
+

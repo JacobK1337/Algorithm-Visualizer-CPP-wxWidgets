@@ -6,7 +6,6 @@
 #include"SideThread.h"
 #include<string>
 #include<map>
-
 class cPathFindWindow : wxFrame
 {
 private:
@@ -102,7 +101,14 @@ private:
 	void generateRandomCost(wxCommandEvent& evt);
 	void sourceSetButtonClicked(wxCommandEvent& evt);
 
+	void cellVisitedUpdate(wxCommandEvent& evt);
+	void cellPathToSourceUpdate(wxCommandEvent& evt);
+	void updateCellColor(const int& FIRST_DIM_EQ, wxColour const& t_newColour);
+	void updateCellValue(const int& FIRST_DIM_EQ, wxString const& t_newValue);
+
+
 public:
+	bool isCellBlocked(const int& FIRST_DIM_EQ);
 	cPathFindWindow();
 	~cPathFindWindow();
 	wxDECLARE_EVENT_TABLE();

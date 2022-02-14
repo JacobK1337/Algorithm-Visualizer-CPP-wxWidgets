@@ -2,35 +2,41 @@
 #include<wx/wx.h>
 #include<vector>
 #include<queue>
+#include"defined_typenames.h"
+#include"declared_events.h"
 
 class DijkstraSP
 {
-
 private:
+	
+	const int MAP_UPDATE_REQUEST_ID = 5556;
+	const int MAP_RECON_REQUEST_ID = 5557;
 	int VERTEX_COUNT;
 	int source = -1;
-	std::vector<std::vector<std::pair<int,int>>>* adjList = nullptr;
-	std::vector<int>* ancestor = nullptr;
-	std::vector<std::vector<int>> costList;
-	std::vector<bool> mapButtonBlocked;
-	wxButton** mapButtons = nullptr;
 
-private:
+	std::unique_ptr<def_type::vector2DPair> adjList;
+	std::unique_ptr<def_type::vector1DInt> ancestor;
+	std::unique_ptr<def_type::vector1DInt> shortestDistance;
+	def_type::vector2DInt costList;
+
+	def_type::vector1DBool mapButtonBlocked;
+	wxEvtHandler* parentEvtHandler = nullptr;
+
 	void addNeighbours(int i, int j);
 	void applyAdjList();
 	bool isSafe(int i, int j, const int ROW_LIMIT, const int COL_LIMIT);
 
 public:
-	DijkstraSP(wxButton** buttons, int VERTEX_COUNT);
+	DijkstraSP(const int t_MAP_ROWS, const int t_MAP_COLS, wxEvtHandler* handler);
 	~DijkstraSP();
 
-	void setCostList(std::vector<std::vector<int>>& costList);
-	void setBlockedCells(std::vector<bool>& blockedButtons);
+	void setCostList(def_type::vector2DInt& costList);
+	void setBlockedCells(def_type::vector1DBool& blockedButtons);
 	void incrementCellCost(const int i, const int j);
 	int checkCellCost(const int i, const int j);
 	void setSource(int src);
 	int getSource();
+	const int getShortestDistance(const int FIRST_DIM_EQ);
 	void runDijkstraAlgorithm();
 	void showPathToSource(int t_vertexFrom);
 };
-
