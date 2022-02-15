@@ -6,6 +6,7 @@
 #include"SideThread.h"
 #include<string>
 #include<map>
+
 class cPathFindWindow : wxFrame
 {
 private:
@@ -17,17 +18,15 @@ private:
 	MAP_TYPE currentMapType;
 	MAP_STATE currentMapState = IDLE;
 
-
-
 	//algorithm implementations
-	unique_ptr<DijkstraSP> dijkstraImpl;
-	unique_ptr<DFSimpl> dfsImpl;
-	unique_ptr<BFSimpl> bfsImpl;
+	std::unique_ptr<DijkstraSP> dijkstraImpl;
+	std::unique_ptr<DFSimpl> dfsImpl;
+	std::unique_ptr<BFSimpl> bfsImpl;
 
 	//wxWidgets elements
 	wxPanel* frameContent = nullptr;
 	wxButton** mapButtons = nullptr;
-	vector<bool> mapButtonBlocked;
+	std::vector<bool> mapButtonBlocked;
 
 	wxToolBar* algorithmTools = nullptr;
 	wxChoice* algorithmChoice = nullptr;
@@ -39,29 +38,29 @@ private:
 	SideThread* someThread = nullptr;
 
 	//algorithm setup/description/start/onclick maps
-	vector<MAP_TYPE> mapTypeMapping = {
+	std::vector<MAP_TYPE> mapTypeMapping = {
 		DIJKSTRA, DFS, BFS
 	};
 
-	map<MAP_TYPE, string> mapTypeDesc = {
+	std::map<MAP_TYPE, std::string> mapTypeDesc = {
 		{DIJKSTRA, "Dijkstra Shortest Path"},
 		{DFS, "Depth-First Search"},
 		{BFS, "Breadth-First Search"}
 	};
 
-	map < MAP_TYPE, function<void()> > mapTypeSetup = {
+	std::map < MAP_TYPE, std::function<void()> > mapTypeSetup = {
 		{DIJKSTRA, [this]() -> void {this->setupDijkstraSp(); }},
 		{DFS, [this]() -> void {this->setupDfs(); }},
 		{BFS, [this]() -> void {this->setupBfs(); }}
 	};
 
-	map < MAP_TYPE, function<void()> > mapTypeStart = {
+	std::map < MAP_TYPE, std::function<void()> > mapTypeStart = {
 		{DIJKSTRA, [this]() -> void {this->runDijkstra(); }},
 		{DFS, [this]() -> void {this->runDfs(); }},
 		{BFS, [this]() -> void {this->runBfs(); }}
 	};
 
-	map< MAP_TYPE, function<void(wxButton*)> > mapTypeOnClick = {
+	std::map< MAP_TYPE, std::function<void(wxButton*)> > mapTypeOnClick = {
 		{DIJKSTRA, [this](wxButton* button) -> void {this->dijkstraButtonClickAction(button); }},
 		{DFS, [this](wxButton* button) -> void {this->dfsButtonClickAction(button); }},
 		{BFS, [this](wxButton* button) -> void {this->bfsButtonClickAction(button); }}
@@ -78,6 +77,7 @@ private:
 	void onStart(wxCommandEvent& evt);
 	void runAlgorithm();
 	void stopAlgorithm();
+	void resetMap();
 	void runDijkstra();
 	void runDfs();
 	void runBfs();
@@ -91,8 +91,7 @@ private:
 	void enableMapButtons();
 	void fixOldSource(const int t_oldSource, const int t_valueToSet);
 
-	void assignAlgorithmThread(const function<void()> &runFunction);
-	void onThreadRun(wxCommandEvent& evt);
+	void assignAlgorithmThread(const std::function<void()> &runFunction);
 	void onThreadEnd(wxCommandEvent& evt);
 
 	void choiceSelected(wxCommandEvent& evt);

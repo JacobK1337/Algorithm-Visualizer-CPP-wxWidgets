@@ -48,7 +48,7 @@ void DijkstraSP::runDijkstraAlgorithm() {
 				(*ancestor)[v] = curr;
 				currentDistances.push(make_pair((*shortestDistance)[v], v));
 
-				wxCommandEvent mapUpdateEvt(wxEVT_MAP_UPDATE_REQUEST, MAP_UPDATE_REQUEST_ID);
+				wxCommandEvent mapUpdateEvt(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID);
 				mapUpdateEvt.SetInt(v);
 				wxPostEvent(parentEvtHandler, mapUpdateEvt);
 			}
@@ -67,7 +67,7 @@ void DijkstraSP::showPathToSource(int t_vertexFrom) {
 
 	while (temp != source) {
 
-		wxCommandEvent mapUpdateEvt(wxEVT_MAP_RECON_REQUEST, MAP_RECON_REQUEST_ID);
+		wxCommandEvent mapUpdateEvt(wxEVT_MAP_RECON_REQUEST, evt_id::MAP_RECON_REQUEST_ID);
 		mapUpdateEvt.SetInt(temp);
 		wxPostEvent(parentEvtHandler, mapUpdateEvt);
 

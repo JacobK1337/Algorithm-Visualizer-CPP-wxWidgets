@@ -1,11 +1,12 @@
 #include "BFSimpl.h"
-using namespace std;
 
-BFSimpl::BFSimpl(wxButton** buttons, int MAP_ROWS, int MAP_COLS) {
+using namespace std;
+using namespace def_type;
+BFSimpl::BFSimpl(int MAP_ROWS, int MAP_COLS, wxEvtHandler* handler) : parentEvtHandler(handler) {
+
 	this->MAP_ROWS = MAP_ROWS;
 	this->MAP_COLS = MAP_COLS;
 
-	mapButtons = buttons;
 	adjList = make_unique<vector2DInt>(MAP_ROWS * MAP_COLS, vector1DInt());
 	visList = make_unique<vector1DBool>(MAP_ROWS * MAP_COLS, false);
 	ancestor = make_unique<vector1DInt>(MAP_ROWS * MAP_COLS, -1);
@@ -20,7 +21,7 @@ int BFSimpl::getSource() {
 }
 
 
-void BFSimpl::setBlockedCells(vector<bool>& blockedCells) {
+void BFSimpl::setBlockedCells(vector1DBool& blockedCells) {
 	mapBlockedCells = blockedCells;
 }
 
@@ -46,7 +47,10 @@ void BFSimpl::bfs(int src) {
 				(*visList)[curr] = true;
 				(*ancestor)[curr] = front;
 				q.push(curr);
-				mapButtons[curr]->SetBackgroundColour(wxColour(204, 204, 0));
+
+				wxCommandEvent mapUpdateEvt(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID);
+				mapUpdateEvt.SetInt(src);
+				wxPostEvent(parentEvtHandler, mapUpdateEvt);
 				wxMilliSleep(100);
 			}
 		}
@@ -66,7 +70,10 @@ void BFSimpl::showPathToSource(const int t_vertexFrom) {
 	int temp = t_vertexFrom;
 
 	while (temp != source) {
-		mapButtons[temp]->SetBackgroundColour(wxColour(51, 255, 51));
+
+		wxCommandEvent mapUpdateEvt(wxEVT_MAP_RECON_REQUEST, evt_id::MAP_RECON_REQUEST_ID);
+		mapUpdateEvt.SetInt(temp);
+		wxPostEvent(parentEvtHandler, mapUpdateEvt);
 		wxMilliSleep(100);
 
 		temp = (*ancestor)[temp];

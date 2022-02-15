@@ -7,7 +7,6 @@ DFSimpl::DFSimpl(int MAP_ROWS, int MAP_COLS, wxEvtHandler* handler) : parentEvtH
 	this->MAP_ROWS = MAP_ROWS;
 	this->MAP_COLS = MAP_COLS;
 
-
 	adjList = make_unique<vector2DInt>(MAP_ROWS * MAP_COLS, vector1DInt());
 	visList = make_unique<vector1DBool>(MAP_ROWS * MAP_COLS, false);
 	ancestor = make_unique<vector1DInt>(MAP_ROWS * MAP_COLS, -1);
@@ -34,12 +33,12 @@ void DFSimpl::runDfsAlgorithm() {
 void DFSimpl::dfs(int src) {
 
 	(*visList)[src] = true;
+
 	if (src != source) {
-		wxCommandEvent mapUpdateEvt(wxEVT_MAP_UPDATE_REQUEST, MAP_UPDATE_REQUEST_ID);
+		wxCommandEvent mapUpdateEvt(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID);
 		mapUpdateEvt.SetInt(src);
 		wxPostEvent(parentEvtHandler, mapUpdateEvt);
 	}
-		//mapButtons[src]->SetBackgroundColour(wxColour(204, 204, 0));
 
 	wxMilliSleep(100);
 	for (int i = 0; i < (*adjList)[src].size(); i++) {
@@ -59,10 +58,9 @@ void DFSimpl::showPathToSource(const int t_vertexFrom) {
 
 	while (temp != source) {
 
-		wxCommandEvent mapUpdateEvt(wxEVT_MAP_RECON_REQUEST, MAP_RECON_REQUEST_ID);
+		wxCommandEvent mapUpdateEvt(wxEVT_MAP_RECON_REQUEST, evt_id::MAP_RECON_REQUEST_ID);
 		mapUpdateEvt.SetInt(temp);
 		wxPostEvent(parentEvtHandler, mapUpdateEvt);
-
 		wxMilliSleep(100);
 
 		temp = (*ancestor)[temp];

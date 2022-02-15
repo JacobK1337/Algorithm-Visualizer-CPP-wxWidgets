@@ -9,8 +9,6 @@ class DijkstraSP
 {
 private:
 	
-	const int MAP_UPDATE_REQUEST_ID = 5556;
-	const int MAP_RECON_REQUEST_ID = 5557;
 	int VERTEX_COUNT;
 	int source = -1;
 

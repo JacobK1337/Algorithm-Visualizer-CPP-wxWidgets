@@ -12,7 +12,7 @@ private:
 
 
 	std::vector<std::string> ALGO_CATEGORIES;
-	std::vector<function <wxFrame* ()> > ALGO_FRAMES;
+	std::vector<std::function <wxFrame* ()> > ALGO_FRAMES;
 
 	wxPanel* panelContent = nullptr;
 	wxStaticText* welcomeHeader = nullptr;

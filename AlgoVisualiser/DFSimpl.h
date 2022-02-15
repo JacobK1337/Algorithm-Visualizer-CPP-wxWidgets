@@ -7,9 +7,6 @@ class DFSimpl
 {
 private:
 
-	const int MAP_UPDATE_REQUEST_ID = 5556;
-	const int MAP_RECON_REQUEST_ID = 5557;
-
 	int MAP_ROWS;
 	int MAP_COLS;
 	int source = -1;
