@@ -37,7 +37,6 @@ protected:
 	virtual void sourceSetButtonClicked(wxCommandEvent& evt) = 0;
 
 	virtual void cellVisitedUpdate(wxThreadEvent& evt) = 0;
-	virtual void cellPathToSourceUpdate(wxCommandEvent& evt) = 0;
 	virtual void updateCellColor(const int& FIRST_DIM_EQ, wxColour const& t_newColour) = 0;
 	virtual void updateCellValue(const int& FIRST_DIM_EQ, wxString const& t_newValue) = 0;
 

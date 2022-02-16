@@ -18,7 +18,9 @@ private:
 	def_type::vector2DInt costList;
 
 	def_type::vector1DBool mapButtonBlocked;
+
 	wxEvtHandler* parentEvtHandler = nullptr;
+	std::unique_ptr<def_type::CELL_UPDATE_INFO> THREAD_DATA;
 
 	void addNeighbours(int i, int j);
 	void applyAdjList();
@@ -35,6 +37,6 @@ public:
 	void setSource(int src);
 	int getSource();
 	const int getShortestDistance(const int FIRST_DIM_EQ);
-	void runDijkstraAlgorithm();
+	wxThread::ExitCode runDijkstraAlgorithm(wxThread* workingThread);
 	void showPathToSource(int t_vertexFrom);
 };

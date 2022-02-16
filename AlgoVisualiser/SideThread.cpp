@@ -4,8 +4,10 @@ SideThread::SideThread(wxEvtHandler* parent, std::function<void()> functionEvent
 	this->functionEvent = functionEvent;
 }
 
-void* SideThread::Entry() {
+wxThread::ExitCode SideThread::Entry() {
+
 	functionEvent();
+
 
 	wxCommandEvent evt(wxEVT_THREAD_END, evt_id::THREAD_END_ID);
 

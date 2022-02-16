@@ -2,7 +2,7 @@
 
 using namespace std;
 using namespace def_type;
-BFSimpl::BFSimpl(int MAP_ROWS, int MAP_COLS, wxEvtHandler* handler) : parentEvtHandler(handler) {
+BFSimpl::BFSimpl(const int& MAP_ROWS, const int& MAP_COLS, wxEvtHandler* handler) : parentEvtHandler(handler) {
 
 	this->MAP_ROWS = MAP_ROWS;
 	this->MAP_COLS = MAP_COLS;
@@ -13,7 +13,7 @@ BFSimpl::BFSimpl(int MAP_ROWS, int MAP_COLS, wxEvtHandler* handler) : parentEvtH
 
 }
 
-void BFSimpl::setSource(const int src){
+void BFSimpl::setSource(const int& src) {
 	source = src;
 }
 int BFSimpl::getSource() {
@@ -40,6 +40,11 @@ void BFSimpl::bfs(int src) {
 	while (!q.empty()) {
 		int front = q.front();
 		q.pop();
+
+		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(front, front, wxColour(204, 204, 0));
+		evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, parentEvtHandler, *THREAD_DATA);
+		wxMilliSleep(100);
+
 		for (int i = 0; i < (*adjList)[front].size(); i++) {
 			int curr = (*adjList)[front][i];
 
@@ -47,11 +52,6 @@ void BFSimpl::bfs(int src) {
 				(*visList)[curr] = true;
 				(*ancestor)[curr] = front;
 				q.push(curr);
-
-				wxCommandEvent mapUpdateEvt(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID);
-				mapUpdateEvt.SetInt(src);
-				wxPostEvent(parentEvtHandler, mapUpdateEvt);
-				wxMilliSleep(100);
 			}
 		}
 	}
@@ -65,15 +65,14 @@ void BFSimpl::applyAdjList() {
 
 }
 
-void BFSimpl::showPathToSource(const int t_vertexFrom) {
+void BFSimpl::showPathToSource(const int& t_vertexFrom) {
 
 	int temp = t_vertexFrom;
 
 	while (temp != source) {
 
-		wxCommandEvent mapUpdateEvt(wxEVT_MAP_RECON_REQUEST, evt_id::MAP_RECON_REQUEST_ID);
-		mapUpdateEvt.SetInt(temp);
-		wxPostEvent(parentEvtHandler, mapUpdateEvt);
+		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, -1, wxColour(51, 255, 51));
+		evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, parentEvtHandler, *THREAD_DATA);
 		wxMilliSleep(100);
 
 		temp = (*ancestor)[temp];
@@ -85,7 +84,7 @@ void BFSimpl::addNeighbours(int i, int j) {
 
 	for (int x = -1; x <= 1; x++)
 		for (int y = -1; y <= 1; y++) {
-			if (!(x == 0 && y == 0) && isSafe(i + x, j + y, MAP_ROWS, MAP_COLS)) {
+			if (!(x == 0 && y == 0) && isSafe(i + x, j + y)) {
 				int currentCellNum = i * MAP_COLS + j;
 				int neighCellNum = (i + x) * MAP_COLS + (j + y);
 
@@ -98,12 +97,12 @@ void BFSimpl::addNeighbours(int i, int j) {
 }
 
 
-bool BFSimpl::isSafe(int i, int j, const int ROW_LIMIT, const int COL_LIMIT) {
+bool BFSimpl::isSafe(const int& i, const int& j) {
 
-	return ((i >= 0 && j >= 0) && (i < ROW_LIMIT&& j < COL_LIMIT));
+	return ((i >= 0 && j >= 0) && (i < MAP_ROWS && j < MAP_COLS));
 
 }
 
 BFSimpl::~BFSimpl() {
-	
+
 }

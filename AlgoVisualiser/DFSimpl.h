@@ -15,15 +15,15 @@ private:
 	std::unique_ptr<def_type::vector1DBool> visList;
 	std::unique_ptr<def_type::vector1DInt> ancestor;
 
-	wxEvtHandler* parentEvtHandler = nullptr;
 	def_type::vector1DBool mapBlockedCells;
 
-private:
+	wxEvtHandler* parentEvtHandler = nullptr;
+	std::unique_ptr<def_type::CELL_UPDATE_INFO> THREAD_DATA;
 
 	void dfs(int src);
 	void addNeighbours(int i, int j);
 	void applyAdjList();
-	bool isSafe(int i, int j, const int ROW_LIMIT, const int COL_LIMIT);
+	bool isSafe(int i, int j);
 
 public:
 	void runDfsAlgorithm();
@@ -31,7 +31,7 @@ public:
 	int getSource();
 	void setBlockedCells(def_type::vector1DBool& blockedCells);
 	void showPathToSource(int t_vertexFrom);
-	DFSimpl(int MAP_ROWS, int MAP_COLS, wxEvtHandler* handler);
+	DFSimpl(const int& MAP_ROWS, const int& MAP_COLS, wxEvtHandler* handler);
 	~DFSimpl();
 };
 

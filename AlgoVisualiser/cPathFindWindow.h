@@ -1,5 +1,6 @@
 #pragma once
 #include<wx/wx.h>
+#include"AlgorithmFrame.h"
 #include"DijkstraSP.h"
 #include"DFSimpl.h"
 #include"BFSimpl.h"
@@ -7,14 +8,14 @@
 #include<string>
 #include<map>
 
-class cPathFindWindow : wxFrame
+class cPathFindWindow : AlgorithmFrame
 {
 private:
 
 	const int MAP_ROWS = 15;
 	const int MAP_COLS = 15;
 	const enum MAP_TYPE{DIJKSTRA, DFS, BFS};
-	const enum MAP_STATE{IDLE, CHOOSING_SOURCE, RUNNING, FINISHED};
+
 	MAP_TYPE currentMapType;
 	MAP_STATE currentMapState = IDLE;
 
@@ -67,17 +68,33 @@ private:
 	};
 
 private:
-	void setupMap();
-	void setupAlgorithmList();
-	void setupToolbar();
+	// Odziedziczono za poœrednictwem elementu AlgorithmFrame
+	virtual void setupMap() override;
+	virtual void setupAlgorithmList() override;
+	virtual void setupToolbar() override;
+	virtual void onStart(wxCommandEvent& evt) override;
+	virtual void runAlgorithm() override;
+	virtual void stopAlgorithm() override;
+	virtual void resetMap() override;
+	virtual void setMapState(MAP_STATE t_mapState) override;
+	virtual void disableMapButtons() override;
+	virtual void enableMapButtons() override;
+	virtual void fixOldSource(const int t_oldSource, const int t_valueToSet) override;
+	virtual void assignAlgorithmThread(const std::function<void()>& runFunction) override;
+	virtual void onThreadEnd(wxCommandEvent& evt) override;
+	virtual void choiceSelected(wxCommandEvent& evt) override;
+	virtual void mapButtonClicked(wxCommandEvent& evt) override;
+	virtual void rightButtonClicked(wxMouseEvent& evt) override;
+	virtual void sourceSetButtonClicked(wxCommandEvent& evt) override;
+	virtual void cellVisitedUpdate(wxThreadEvent& evt) override;
+	virtual void updateCellColor(const int& FIRST_DIM_EQ, wxColour const& t_newColour) override;
+	virtual void updateCellValue(const int& FIRST_DIM_EQ, wxString const& t_newValue) override;
+
+	//algorithm setup functions
 	void setupDijkstraSp();
 	void setupDfs();
 	void setupBfs();
 
-	void onStart(wxCommandEvent& evt);
-	void runAlgorithm();
-	void stopAlgorithm();
-	void resetMap();
 	void runDijkstra();
 	void runDfs();
 	void runBfs();
@@ -86,28 +103,9 @@ private:
 	void dfsButtonClickAction(wxButton* t_buttonClicked);
 	void bfsButtonClickAction(wxButton* t_buttonClicked);
 
-	void setMapState(MAP_STATE t_mapState);
-	void disableMapButtons();
-	void enableMapButtons();
-	void fixOldSource(const int t_oldSource, const int t_valueToSet);
-
-	void assignAlgorithmThread(const std::function<void()> &runFunction);
-	void onThreadEnd(wxCommandEvent& evt);
-
-	void choiceSelected(wxCommandEvent& evt);
-	void mapButtonClicked(wxCommandEvent& evt);
-	void rightButtonClicked(wxMouseEvent& evt);
 	void generateRandomCost(wxCommandEvent& evt);
-	void sourceSetButtonClicked(wxCommandEvent& evt);
-
-	void cellVisitedUpdate(wxCommandEvent& evt);
-	void cellPathToSourceUpdate(wxCommandEvent& evt);
-	void updateCellColor(const int& FIRST_DIM_EQ, wxColour const& t_newColour);
-	void updateCellValue(const int& FIRST_DIM_EQ, wxString const& t_newValue);
-
 
 public:
-	bool isCellBlocked(const int& FIRST_DIM_EQ);
 	cPathFindWindow();
 	~cPathFindWindow();
 	wxDECLARE_EVENT_TABLE();

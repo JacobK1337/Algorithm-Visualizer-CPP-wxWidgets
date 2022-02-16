@@ -1,14 +1,12 @@
 #pragma once
 #include<wx/wx.h>
+#include"AlgorithmFrame.h"
 #include<string>
 #include<map>
 #include<vector>
-#include"AlgorithmFrame.h"
 #include"KTPImpl.h"
 class cBacktrackWindow : AlgorithmFrame
 {
-
-	
 
 public:
 	cBacktrackWindow();
@@ -80,7 +78,6 @@ private:
 	virtual void rightButtonClicked(wxMouseEvent& evt) override;
 	virtual void sourceSetButtonClicked(wxCommandEvent& evt) override;
 	virtual void cellVisitedUpdate(wxThreadEvent& evt) override;
-	virtual void cellPathToSourceUpdate(wxCommandEvent& evt) override;
 	virtual void updateCellColor(const int& FIRST_DIM_EQ, wxColour const& t_newColour) override;
 	virtual void updateCellValue(const int& FIRST_DIM_EQ, wxString const& t_newValue) override;
 	//
