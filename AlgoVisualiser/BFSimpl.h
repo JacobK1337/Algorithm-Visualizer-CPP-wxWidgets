@@ -4,6 +4,7 @@
 #include<queue>
 #include"defined_typenames.h"
 #include"declared_events.h"
+#include"AlgorithmThread.h"
 class BFSimpl
 {
 private:
@@ -21,17 +22,17 @@ private:
 	wxEvtHandler* parentEvtHandler = nullptr;
 	std::unique_ptr<def_type::CELL_UPDATE_INFO> THREAD_DATA;
 
-	void bfs(int src);
+	void bfs(int src, AlgorithmThread* workingThread);
 	void addNeighbours(int i, int j);
 	void applyAdjList();
 	bool isSafe(const int& i, const int& j);
 
 public:
-	void runBfsAlgorithm();
+	void runBfsAlgorithm(AlgorithmThread* workingThread);
 	void setSource(const int& src);
 	int getSource();
 	void setBlockedCells(def_type::vector1DBool& blockedCells);
-	void showPathToSource(const int& t_vertexFrom);
+	void showPathToSource(const int& t_vertexFrom, AlgorithmThread* workingThread);
 	BFSimpl(const int& MAP_ROWS, const int& MAP_COLS, wxEvtHandler* handler);
 	~BFSimpl();
 

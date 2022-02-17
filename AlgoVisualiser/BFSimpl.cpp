@@ -25,12 +25,12 @@ void BFSimpl::setBlockedCells(vector1DBool& blockedCells) {
 	mapBlockedCells = blockedCells;
 }
 
-void BFSimpl::runBfsAlgorithm() {
+void BFSimpl::runBfsAlgorithm(AlgorithmThread* workingThread) {
 	BFSimpl::applyAdjList();
-	bfs(source);
+	bfs(source, workingThread);
 }
 
-void BFSimpl::bfs(int src) {
+void BFSimpl::bfs(int src, AlgorithmThread* workingThread) {
 	queue<int> q;
 
 	(*visList)[src] = true;
@@ -41,9 +41,17 @@ void BFSimpl::bfs(int src) {
 		int front = q.front();
 		q.pop();
 
-		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(front, front, wxColour(204, 204, 0));
-		evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, parentEvtHandler, *THREAD_DATA);
-		wxMilliSleep(100);
+		//checking if thread was destroyed in parent
+		if (!workingThread->TestDestroy()) {
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(front, front, wxColour(204, 204, 0));
+			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, parentEvtHandler, *THREAD_DATA);
+			wxMilliSleep(100);
+		}
+
+		else {
+			workingThread->flagThreadBreak(true);
+			return;
+		}
 
 		for (int i = 0; i < (*adjList)[front].size(); i++) {
 			int curr = (*adjList)[front][i];
@@ -65,15 +73,22 @@ void BFSimpl::applyAdjList() {
 
 }
 
-void BFSimpl::showPathToSource(const int& t_vertexFrom) {
+void BFSimpl::showPathToSource(const int& t_vertexFrom, AlgorithmThread* workingThread) {
 
 	int temp = t_vertexFrom;
 
 	while (temp != source) {
 
-		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, -1, wxColour(51, 255, 51));
-		evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, parentEvtHandler, *THREAD_DATA);
-		wxMilliSleep(100);
+		if (!workingThread->TestDestroy()) {
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, -1, wxColour(51, 255, 51));
+			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, parentEvtHandler, *THREAD_DATA);
+			wxMilliSleep(100);
+		}
+
+		else {
+			workingThread->flagThreadBreak(true);
+			return;
+		}
 
 		temp = (*ancestor)[temp];
 	}
@@ -99,7 +114,7 @@ void BFSimpl::addNeighbours(int i, int j) {
 
 bool BFSimpl::isSafe(const int& i, const int& j) {
 
-	return ((i >= 0 && j >= 0) && (i < MAP_ROWS && j < MAP_COLS));
+	return ((i >= 0 && j >= 0) && (i < MAP_ROWS&& j < MAP_COLS));
 
 }
 

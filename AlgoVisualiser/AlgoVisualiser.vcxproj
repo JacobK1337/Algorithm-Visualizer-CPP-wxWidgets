@@ -26,12 +26,13 @@
     <ClInclude Include="cMain.h" />
     <ClInclude Include="cPathFindWindow.h" />
     <ClInclude Include="declared_events.h" />
+    <ClInclude Include="defined_colours.h" />
     <ClInclude Include="defined_typenames.h" />
     <ClInclude Include="DFSimpl.h" />
     <ClInclude Include="DijkstraSP.h" />
     <ClInclude Include="KruskalMST.h" />
     <ClInclude Include="KTPImpl.h" />
-    <ClInclude Include="SideThread.h" />
+    <ClInclude Include="AlgorithmThread.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AlgorithmFrame.cpp" />
@@ -44,7 +45,7 @@
     <ClCompile Include="DijkstraSP.cpp" />
     <ClCompile Include="KruskalMST.cpp" />
     <ClCompile Include="KTPImpl.cpp" />
-    <ClCompile Include="SideThread.cpp" />
+    <ClCompile Include="AlgorithmThread.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

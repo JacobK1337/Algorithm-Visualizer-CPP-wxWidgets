@@ -4,6 +4,7 @@
 #include<queue>
 #include"defined_typenames.h"
 #include"declared_events.h"
+#include"AlgorithmThread.h"
 
 class DijkstraSP
 {
@@ -37,6 +38,6 @@ public:
 	void setSource(int src);
 	int getSource();
 	const int getShortestDistance(const int FIRST_DIM_EQ);
-	wxThread::ExitCode runDijkstraAlgorithm(wxThread* workingThread);
-	void showPathToSource(int t_vertexFrom);
+	void runDijkstraAlgorithm(AlgorithmThread* workingThread);
+	void showPathToSource(int t_vertexFrom, AlgorithmThread* workingThread);
 };

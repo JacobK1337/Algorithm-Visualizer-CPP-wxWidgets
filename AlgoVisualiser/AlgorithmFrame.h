@@ -4,7 +4,8 @@
 #include<vector>
 #include"declared_events.h"
 #include"defined_typenames.h"
-#include"SideThread.h"
+#include"AlgorithmThread.h"
+#include"defined_colours.h"
 class AlgorithmFrame : public wxFrame
 {
 protected:
@@ -26,11 +27,13 @@ protected:
 	virtual void setMapState(MAP_STATE t_mapState) = 0; 
 	virtual void disableMapButtons() = 0;
 	virtual void enableMapButtons() = 0;
-	virtual void fixOldSource(const int t_oldSource, const int t_valueToSet) = 0; 
+	virtual void enableToolbarButtons() = 0;
+	virtual void disableToolbarButtons() = 0;
+	virtual void replaceSource(const int t_newSource, const std::string t_newSourceValue) = 0; 
 
 	virtual void assignAlgorithmThread(const std::function<void()>& runFunction) = 0; 
 	virtual void onThreadEnd(wxCommandEvent& evt) = 0;
-
+	virtual void onThreadBreak(wxCommandEvent& evt) = 0;
 	virtual void choiceSelected(wxCommandEvent& evt) = 0;
 	virtual void mapButtonClicked(wxCommandEvent& evt) = 0;
 	virtual void rightButtonClicked(wxMouseEvent& evt) = 0;

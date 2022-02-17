@@ -17,6 +17,9 @@ private:
 	const int MAP_ROWS = 5;
 	const int MAP_COLS = 5;
 
+	int mapSource = -1;
+	std::string mapSourceValue = "";
+
 	const enum MAP_TYPE {KNIGHT};
 	MAP_TYPE currentMapType;
 	MAP_STATE currentMapState = IDLE;
@@ -29,7 +32,7 @@ private:
 	wxButton* startButton = nullptr;
 	wxButton* sourceButton = nullptr;
 
-	SideThread* algorithmThread = nullptr;
+	AlgorithmThread* algorithmThread = nullptr;
 
 	std::unique_ptr<KTPImpl> ktpImpl;
 
@@ -70,9 +73,12 @@ private:
 	virtual void setMapState(MAP_STATE t_mapState) override;
 	virtual void disableMapButtons() override;
 	virtual void enableMapButtons() override;
-	virtual void fixOldSource(const int t_oldSource, const int t_valueToSet) override;
+	virtual void enableToolbarButtons() override;
+	virtual void disableToolbarButtons() override;
+	virtual void replaceSource(const int t_newSource, const std::string t_newSourceValue) override;
 	virtual void assignAlgorithmThread(const std::function<void()>& runFunction) override;
 	virtual void onThreadEnd(wxCommandEvent& evt) override;
+	virtual void onThreadBreak(wxCommandEvent& evt) override;
 	virtual void choiceSelected(wxCommandEvent& evt) override;
 	virtual void mapButtonClicked(wxCommandEvent& evt) override;
 	virtual void rightButtonClicked(wxMouseEvent& evt) override;

@@ -3,6 +3,8 @@
 #include<vector>
 #include"defined_typenames.h"
 #include"declared_events.h"
+#include"AlgorithmThread.h"
+
 class DFSimpl
 {
 private:
@@ -20,17 +22,17 @@ private:
 	wxEvtHandler* parentEvtHandler = nullptr;
 	std::unique_ptr<def_type::CELL_UPDATE_INFO> THREAD_DATA;
 
-	void dfs(int src);
+	void dfs(const int& src, AlgorithmThread* workingThread);
 	void addNeighbours(int i, int j);
 	void applyAdjList();
 	bool isSafe(int i, int j);
 
 public:
-	void runDfsAlgorithm();
+	void runDfsAlgorithm(AlgorithmThread* workingThread);
 	void setSource(int src);
 	int getSource();
 	void setBlockedCells(def_type::vector1DBool& blockedCells);
-	void showPathToSource(int t_vertexFrom);
+	void showPathToSource(int t_vertexFrom, AlgorithmThread* workingThread);
 	DFSimpl(const int& MAP_ROWS, const int& MAP_COLS, wxEvtHandler* handler);
 	~DFSimpl();
 };

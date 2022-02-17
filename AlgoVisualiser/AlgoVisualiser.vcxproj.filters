@@ -30,7 +30,7 @@
     <ClInclude Include="DijkstraSP.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="SideThread.h">
+    <ClInclude Include="AlgorithmThread.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
     <ClInclude Include="DFSimpl.h">
@@ -54,6 +54,9 @@
     <ClInclude Include="KTPImpl.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
+    <ClInclude Include="defined_colours.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cApp.cpp">
@@ -71,7 +74,7 @@
     <ClCompile Include="DijkstraSP.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="SideThread.cpp">
+    <ClCompile Include="AlgorithmThread.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
     <ClCompile Include="DFSimpl.cpp">

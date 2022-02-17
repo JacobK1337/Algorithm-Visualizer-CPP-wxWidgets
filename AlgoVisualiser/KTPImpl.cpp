@@ -20,7 +20,7 @@ void KTPImpl::setSource(const int t_newSource)
 	p_source = t_newSource;
 }
 
-void KTPImpl::runAlgorithm()
+void KTPImpl::runAlgorithm(AlgorithmThread* workingThread)
 {
 	def_type::vector2DInt solution(MAP_ROWS, def_type::vector1DInt(MAP_COLS, -1));
 	def_type::vector1DInt xShift = { 2, 1, -1, -2, -2, -1, 1, 2 };
@@ -31,6 +31,7 @@ void KTPImpl::runAlgorithm()
 
 	solution[srcX][srcY] = 0;
 
+	m_workingThread = workingThread;
 	KTPImpl::findSolution(srcX, srcY, 1, solution, xShift, yShift);
 }
 
@@ -38,18 +39,26 @@ void KTPImpl::runAlgorithm()
 
 bool KTPImpl::isSafe(const int& x, const int& y, def_type::vector2DInt& solution)
 {
-	return ((x >= 0 && y >= 0) && (x < MAP_ROWS && y < MAP_COLS) && solution[x][y] == -1);
+	return ((x >= 0 && y >= 0) && (x < MAP_ROWS&& y < MAP_COLS) && solution[x][y] == -1);
 }
 
 bool KTPImpl::findSolution(const int& x, const int& y, const int& numOfVisited, def_type::vector2DInt& solution, def_type::vector1DInt& xShift, def_type::vector1DInt& yShift)
 {
 	const int FIRST_DIM_EQ = x * MAP_COLS + y;
-	THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, numOfVisited, wxColour(204, 204, 0));
-	evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, parentEvtHandler, *THREAD_DATA);
+	if (!m_workingThread->TestDestroy())
+	{
+		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, numOfVisited, wxColour(204, 204, 0));
+		evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, parentEvtHandler, *THREAD_DATA);
 
-	wxMilliSleep(50);
+		wxMilliSleep(50);
+	}
 
-	if (numOfVisited == MAP_ROWS * MAP_COLS) 
+	else {
+		m_workingThread->flagThreadBreak(true);
+		return false;
+	}
+
+	if (numOfVisited == MAP_ROWS * MAP_COLS)
 		return true;
 
 	for (int i = 0; i < 8; i++) {

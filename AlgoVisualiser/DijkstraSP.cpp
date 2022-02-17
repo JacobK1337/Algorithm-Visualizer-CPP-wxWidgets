@@ -21,9 +21,9 @@ void DijkstraSP::setBlockedCells(vector1DBool& blockedButtons) {
 	mapButtonBlocked = blockedButtons;
 }
 
-wxThread::ExitCode DijkstraSP::runDijkstraAlgorithm(wxThread* workingThread) {
-	DijkstraSP::applyAdjList();
+void DijkstraSP::runDijkstraAlgorithm(AlgorithmThread* workingThread) {
 
+	DijkstraSP::applyAdjList();
 	priority_queue<pair<int, int>, vector<pair<int, int>>, greater<> > currentDistances;
 
 	shortestDistance = make_unique<vector1DInt>(VERTEX_COUNT, INT_MAX);
@@ -45,10 +45,12 @@ wxThread::ExitCode DijkstraSP::runDijkstraAlgorithm(wxThread* workingThread) {
 			if ((*shortestDistance)[v] > (*shortestDistance)[curr] + cost) {
 
 				if (workingThread->TestDestroy()) {
-					return (wxThread::ExitCode)0;
+
+					workingThread->flagThreadBreak(true);
+					return;
+
 				}
 
-				wxMilliSleep(400);
 				if (!workingThread->TestDestroy()) {
 
 					(*shortestDistance)[v] = (*shortestDistance)[curr] + cost;
@@ -57,11 +59,12 @@ wxThread::ExitCode DijkstraSP::runDijkstraAlgorithm(wxThread* workingThread) {
 					THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(v, (*shortestDistance)[v], wxColour(204, 204, 0));
 					evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, parentEvtHandler, *THREAD_DATA);
 				}
+
+				wxMilliSleep(100);
 			}
 		}
 	}
 
-	return 0;
 
 }
 
@@ -69,18 +72,28 @@ const int DijkstraSP::getShortestDistance(const int FIRST_DIM_EQ) {
 	return (*shortestDistance)[FIRST_DIM_EQ];
 }
 
-void DijkstraSP::showPathToSource(int t_vertexFrom) {
+void DijkstraSP::showPathToSource(int t_vertexFrom, AlgorithmThread* workingThread) {
 
 	int temp = t_vertexFrom;
 
 	while (temp != source) {
 
-		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, -1, wxColour(51, 255, 51));
-		evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, parentEvtHandler, *THREAD_DATA);
+		if (!workingThread->TestDestroy()) {
 
-		wxMilliSleep(100);
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, -1, wxColour(51, 255, 51));
+			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, parentEvtHandler, *THREAD_DATA);
+			temp = (*ancestor)[temp];
 
-		temp = (*ancestor)[temp];
+			wxMilliSleep(100);
+		}
+
+		else {
+
+			workingThread->flagThreadBreak(true);
+			return;
+			
+		}
+
 	}
 
 }

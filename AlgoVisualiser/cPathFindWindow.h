@@ -4,7 +4,6 @@
 #include"DijkstraSP.h"
 #include"DFSimpl.h"
 #include"BFSimpl.h"
-#include"SideThread.h"
 #include<string>
 #include<map>
 
@@ -14,6 +13,8 @@ private:
 
 	const int MAP_ROWS = 15;
 	const int MAP_COLS = 15;
+	int mapSource = -1;
+	std::string mapSourceValue = "";
 	const enum MAP_TYPE{DIJKSTRA, DFS, BFS};
 
 	MAP_TYPE currentMapType;
@@ -36,7 +37,7 @@ private:
 	wxButton* generateCostButton = nullptr;
 
 	//side thread to proccess algorithms
-	SideThread* someThread = nullptr;
+	AlgorithmThread* algorithmThread = nullptr;
 
 	//algorithm setup/description/start/onclick maps
 	std::vector<MAP_TYPE> mapTypeMapping = {
@@ -66,6 +67,7 @@ private:
 		{DFS, [this](wxButton* button) -> void {this->dfsButtonClickAction(button); }},
 		{BFS, [this](wxButton* button) -> void {this->bfsButtonClickAction(button); }}
 	};
+	
 
 private:
 	// Odziedziczono za poœrednictwem elementu AlgorithmFrame
@@ -79,9 +81,12 @@ private:
 	virtual void setMapState(MAP_STATE t_mapState) override;
 	virtual void disableMapButtons() override;
 	virtual void enableMapButtons() override;
-	virtual void fixOldSource(const int t_oldSource, const int t_valueToSet) override;
+	virtual void enableToolbarButtons() override;
+	virtual void disableToolbarButtons() override;
+	virtual void replaceSource(const int t_newSource, const std::string t_newSourceValue) override;
 	virtual void assignAlgorithmThread(const std::function<void()>& runFunction) override;
 	virtual void onThreadEnd(wxCommandEvent& evt) override;
+	virtual void onThreadBreak(wxCommandEvent& evt) override;
 	virtual void choiceSelected(wxCommandEvent& evt) override;
 	virtual void mapButtonClicked(wxCommandEvent& evt) override;
 	virtual void rightButtonClicked(wxMouseEvent& evt) override;
@@ -102,7 +107,8 @@ private:
 	void dijkstraButtonClickAction(wxButton* t_buttonClicked);
 	void dfsButtonClickAction(wxButton* t_buttonClicked);
 	void bfsButtonClickAction(wxButton* t_buttonClicked);
-
+	
+	void buttonClickAction(wxButton* t_buttonClicked);
 	void generateRandomCost(wxCommandEvent& evt);
 
 public:
