@@ -33,6 +33,7 @@
     <ClInclude Include="KruskalMST.h" />
     <ClInclude Include="KTPImpl.h" />
     <ClInclude Include="AlgorithmThread.h" />
+    <ClInclude Include="SudokuSolver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AlgorithmFrame.cpp" />
@@ -46,6 +47,7 @@
     <ClCompile Include="KruskalMST.cpp" />
     <ClCompile Include="KTPImpl.cpp" />
     <ClCompile Include="AlgorithmThread.cpp" />
+    <ClCompile Include="SudokuSolver.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -386,8 +386,6 @@ void cPathFindWindow::onThreadBreak(wxCommandEvent& evt) {
 
 void cPathFindWindow::cellVisitedUpdate(wxThreadEvent& evt) {
 
-	//int FIRST_DIM_EQ = evt.GetInt();
-
 	def_type::CELL_UPDATE_INFO NEW_DATA = evt.GetPayload<def_type::CELL_UPDATE_INFO>();
 
 	int FIRST_DIM_EQ = NEW_DATA.FIRST_DIM_EQ;

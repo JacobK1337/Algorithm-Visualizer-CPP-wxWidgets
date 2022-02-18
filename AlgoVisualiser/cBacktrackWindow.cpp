@@ -64,6 +64,31 @@ void cBacktrackWindow::knightMapClick(wxButton* button)
 	}
 }
 
+void cBacktrackWindow::setupSudokuSolver()
+{
+	this->sudokuSolver = std::make_unique<SudokuSolver>(9, (AlgorithmFrame*)this);
+
+	for (int i = 0; i < MAP_ROWS; i++)
+		for (int j = 0; j < MAP_COLS; j++) {
+			const int FIRST_DIM_EQ = i * MAP_COLS + j;
+			mapButtons[FIRST_DIM_EQ]->SetLabelText(wxString(""));
+			mapButtons[FIRST_DIM_EQ]->SetBackgroundColour(wxColour(255, 255, 255));
+		}
+
+	cBacktrackWindow::enableMapButtons();
+	cBacktrackWindow::enableToolbarButtons();
+}
+
+void cBacktrackWindow::runSudokuSolver()
+{
+	cBacktrackWindow::assignAlgorithmThread([this]() -> void {this->sudokuSolver->runAlgorithm(algorithmThread); });
+}
+
+void cBacktrackWindow::sudokuSolverMapClick(wxButton* button)
+{
+
+}
+
 void cBacktrackWindow::setupMap()
 {
 	wxGridSizer* mapSizer = new wxGridSizer(MAP_ROWS, MAP_COLS, 0, 0);

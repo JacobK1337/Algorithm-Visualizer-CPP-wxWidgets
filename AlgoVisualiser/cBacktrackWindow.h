@@ -5,6 +5,8 @@
 #include<map>
 #include<vector>
 #include"KTPImpl.h"
+#include"SudokuSolver.h"
+
 class cBacktrackWindow : AlgorithmFrame
 {
 
@@ -14,13 +16,13 @@ public:
 	wxDECLARE_EVENT_TABLE();
 
 private:
-	const int MAP_ROWS = 5;
-	const int MAP_COLS = 5;
+	const int MAP_ROWS = 9;
+	const int MAP_COLS = 9;
 
-	int mapSource = -1;
+	int mapSource = 0;
 	std::string mapSourceValue = "";
 
-	const enum MAP_TYPE {KNIGHT};
+	const enum MAP_TYPE {KNIGHT, SUDOKU};
 	MAP_TYPE currentMapType;
 	MAP_STATE currentMapState = IDLE;
 
@@ -35,25 +37,31 @@ private:
 	AlgorithmThread* algorithmThread = nullptr;
 
 	std::unique_ptr<KTPImpl> ktpImpl;
+	std::unique_ptr<SudokuSolver> sudokuSolver;
 
 	std::vector<MAP_TYPE> mapTypeMapping = {
-		KNIGHT
+		KNIGHT,
+		SUDOKU
 	};
 
 	std::map<MAP_TYPE, std::string> mapTypeDesc = {
 		{KNIGHT, "Knight's tour algorithm"},
+		{SUDOKU, "Sudoku solver"}
 	};
 
 	std::map < MAP_TYPE, std::function<void()> > mapTypeSetup = {
-		{KNIGHT, [this]() -> void {this->setupKnightProblem(); }}
+		{KNIGHT, [this]() -> void {this->setupKnightProblem(); }},
+		{SUDOKU, [this]() -> void {this->setupSudokuSolver(); }}
 	};
 
 	std::map < MAP_TYPE, std::function<void()> > mapTypeStart = {
 		{KNIGHT, [this]() -> void {this->runKnightProblem(); }},
+		{SUDOKU, [this]() -> void {this->runSudokuSolver(); }}
 	};
 
 	std::map< MAP_TYPE, std::function<void(wxButton*)> > mapTypeOnClick = {
-		{KNIGHT, [this](wxButton* button) -> void {this->knightMapClick(button); }}
+		{KNIGHT, [this](wxButton* button) -> void {this->knightMapClick(button); }},
+		{SUDOKU, [this](wxButton* button) -> void {this->sudokuSolverMapClick(button); }}
 	};
 
 	//backtrack algorithms
@@ -61,6 +69,12 @@ private:
 	void setupKnightProblem();
 	void runKnightProblem();
 	void knightMapClick(wxButton* button);
+
+	//sudoku solver setups
+	void setupSudokuSolver();
+	void runSudokuSolver();
+	void sudokuSolverMapClick(wxButton* button);
+
 
 	// Odziedziczono za poœrednictwem elementu AlgorithmFrame
 	virtual void setupMap() override;

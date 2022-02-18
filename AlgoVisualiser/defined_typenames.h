@@ -8,6 +8,7 @@ namespace def_type {
 	typedef std::vector<bool> vector1DBool;
 	typedef std::vector<vector1DPair> vector2DPair;
 	typedef std::vector<vector1DInt> vector2DInt;
+    typedef std::vector<vector1DBool> vector2DBool;
 
     struct CELL_UPDATE_INFO {
     public:
