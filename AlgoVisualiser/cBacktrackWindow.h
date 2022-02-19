@@ -18,8 +18,7 @@ public:
 private:
 	const int MAP_ROWS = 9;
 	const int MAP_COLS = 9;
-
-	int mapSource = 0;
+	int mapSource = -1;
 	std::string mapSourceValue = "";
 
 	const enum MAP_TYPE {KNIGHT, SUDOKU};
