@@ -2,39 +2,36 @@
 #include<wx/wx.h>
 #include<vector>
 #include<queue>
-#include"defined_typenames.h"
-#include"declared_events.h"
-#include"AlgorithmThread.h"
-class BFSimpl
+#include"GraphAlgorithm.h"
+class BFSimpl : public GraphAlgorithm
 {
+
 private:
-	
-	int MAP_ROWS;
-	int MAP_COLS;
-	int source = -1;
 
 	std::unique_ptr<def_type::vector2DInt> adjList;
 	std::unique_ptr<def_type::vector1DBool> visList;
 	std::unique_ptr<def_type::vector1DInt> ancestor;
 
+	std::unique_ptr<def_type::CELL_UPDATE_INFO> THREAD_DATA;
 	def_type::vector1DBool mapBlockedCells;
 
-	wxEvtHandler* parentEvtHandler = nullptr;
-	std::unique_ptr<def_type::CELL_UPDATE_INFO> THREAD_DATA;
-
-	void bfs(int src, AlgorithmThread* workingThread);
-	void addNeighbours(int i, int j);
-	void applyAdjList();
-	bool isSafe(const int& i, const int& j);
+	void bfs(const int &src, int& when, AlgorithmThread* workingThread);
 
 public:
-	void runBfsAlgorithm(AlgorithmThread* workingThread);
-	void setSource(const int& src);
-	int getSource();
-	void setBlockedCells(def_type::vector1DBool& blockedCells);
-	void showPathToSource(const int& t_vertexFrom, AlgorithmThread* workingThread);
+
 	BFSimpl(const int& MAP_ROWS, const int& MAP_COLS, wxEvtHandler* handler);
 	~BFSimpl();
+	int getSource();
+	void setBlockedCells(def_type::vector1DBool& blockedCells);
+
+	// Odziedziczono za poœrednictwem elementu GraphAlgorithm
+	virtual void generateValues(AlgorithmThread* workingThread) override;
+	virtual void runAlgorithm(AlgorithmThread* workingThread) override;
+	virtual void setSource(const int& t_newSource) override;
+	virtual void showPathToSource(const int& t_vertexFrom, AlgorithmThread* workingThread) override;
+	virtual void addNeighbours(const int& i, const int& j) override;
+	virtual void applyAdjList() override;
+	virtual bool isSafe(const int& i, const int& j) override;
 
 };
 

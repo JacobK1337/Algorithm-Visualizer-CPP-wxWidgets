@@ -2,6 +2,9 @@
 
 SudokuSolver::SudokuSolver(const int& MAP_SIZE, wxEvtHandler* handler) : m_MAP_SIZE(MAP_SIZE), parentEvtHandler(handler)
 {
+	sudokuMap = std::make_unique<def_type::vector2DInt>(m_MAP_SIZE, def_type::vector1DInt(m_MAP_SIZE, -1));
+	inDiagonalSquare = std::make_unique<def_type::vector2DBool>(m_MAP_SIZE, def_type::vector1DBool(m_MAP_SIZE, false));
+	m_DIAG_SQRT = sqrt(m_MAP_SIZE);
 }
 
 SudokuSolver::~SudokuSolver()
@@ -10,24 +13,18 @@ SudokuSolver::~SudokuSolver()
 
 void SudokuSolver::runAlgorithm(AlgorithmThread* workingThread)
 {
-	sudokuMap = std::make_unique<def_type::vector2DInt>(m_MAP_SIZE, def_type::vector1DInt(m_MAP_SIZE, 0));
-	inDiagonalSquare = std::make_unique<def_type::vector2DBool>(m_MAP_SIZE, def_type::vector1DBool(m_MAP_SIZE, false));
-	m_DIAG_SQRT = sqrt(m_MAP_SIZE);
-
-
+	
 	SudokuSolver::solveSudoku(workingThread);
 }
 
 void SudokuSolver::solveSudoku(AlgorithmThread* workingThread)
 {
-	SudokuSolver::generateValidSudoku();
+	//SudokuSolver::generateValidSudoku();
 
-	SudokuSolver::printSudoku(workingThread);
 }
 
-void SudokuSolver::generateValidSudoku()
-{
-	//generating diagonal valid values in squares
+
+void SudokuSolver::generateValues(AlgorithmThread* workingThread) {
 
 	srand(time(NULL));
 	for (int i = 0; i < m_MAP_SIZE; i += m_DIAG_SQRT) {
@@ -38,9 +35,12 @@ void SudokuSolver::generateValidSudoku()
 
 	SudokuSolver::generateRemainingValues(m_DIAG_SQRT);
 
-	
-}
+	//removing no. of filled cells depending on the difficulty
 
+	SudokuSolver::unFillCells(difficulty[2]);
+
+	SudokuSolver::printSudoku(workingThread);
+}
 
 void SudokuSolver::printSudoku(AlgorithmThread* workingThread) {
 
@@ -50,7 +50,7 @@ void SudokuSolver::printSudoku(AlgorithmThread* workingThread) {
 		{
 			const int FIRST_DIM_EQ = i * m_MAP_SIZE + j;
 			const int value = (*sudokuMap)[i][j];
-
+			
 			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, value, wxColour(255, 255, 255));
 			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, parentEvtHandler, *THREAD_DATA);
 
@@ -102,12 +102,30 @@ bool SudokuSolver::generateRemainingValues(const int& FIRST_DIM_EQ) {
 			if (SudokuSolver::generateRemainingValues(nextCell))
 				return true;
 
-			(*sudokuMap)[ROW][COL] = 0;
+			(*sudokuMap)[ROW][COL] = -1;
 		}
 
 	}
 
 	return false;
+}
+
+void SudokuSolver::unFillCells(const int& NUM) {
+
+	int temp = NUM;
+	int randomValue;
+	while (temp != 0) {
+		
+		randomValue = rand() % (m_MAP_SIZE * m_MAP_SIZE - 1);
+
+		int i = randomValue / m_MAP_SIZE;
+		int j = randomValue % m_MAP_SIZE;
+
+		if ((*sudokuMap)[i][j] != 0) {
+			(*sudokuMap)[i][j] = -1;
+			temp--;
+		}
+	}
 }
 
 bool SudokuSolver::valueAvailableInSquare(const int& ROW, const int& COL, const int& NUM)

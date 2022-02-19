@@ -10,11 +10,10 @@ cPathFindWindow::cPathFindWindow() : AlgorithmFrame(wxString("Pathfinding algori
 	this->SetBackgroundColour(wxColour(255, 201, 213));
 	setupToolbar();
 
-
 	Connect(evt_id::MAP_UPDATE_REQUEST_ID, wxEVT_MAP_UPDATE_REQUEST, wxThreadEventHandler(cPathFindWindow::cellVisitedUpdate));
 
 	frameContent = new wxPanel(this, wxID_ANY, wxDefaultPosition);
-	frameContent->SetBackgroundColour(wxColour(43, 201, 231));
+	frameContent->SetBackgroundColour(wxColour(0, 0, 0));
 
 	mapButtons = new wxButton * [MAP_ROWS * MAP_COLS];
 	mapButtonBlocked = vector<bool>(MAP_ROWS * MAP_COLS, false);
@@ -59,11 +58,6 @@ void cPathFindWindow::setupToolbar() {
 	startButton = new wxButton(algorithmTools, wxID_ANY, "Start", wxDefaultPosition, wxSize(400, 100));
 	startButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &cPathFindWindow::onStart, this);
 
-	generateCostButton = new wxButton(algorithmTools, wxID_ANY, "Generate Cost", wxDefaultPosition, wxSize(400, 100));
-	generateCostButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &cPathFindWindow::generateRandomCost, this);
-
-	generateCostButton->Disable();
-
 	sourceButton = new wxButton(algorithmTools, wxID_ANY, "Set source", wxDefaultPosition, wxSize(300, 100));
 	sourceButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &cPathFindWindow::sourceSetButtonClicked, this);
 
@@ -73,8 +67,6 @@ void cPathFindWindow::setupToolbar() {
 	algorithmTools->AddControl(algorithmChoice);
 	algorithmTools->AddStretchableSpace();
 	algorithmTools->AddControl(sourceButton);
-	algorithmTools->AddStretchableSpace();
-	algorithmTools->AddControl(generateCostButton);
 	algorithmTools->Realize();
 }
 
@@ -89,41 +81,27 @@ void cPathFindWindow::choiceSelected(wxCommandEvent& evt) {
 
 	cPathFindWindow::resetMap();
 
-
 }
 
 void cPathFindWindow::setupDijkstraSp() {
 
 	vector<vector<int>> initialCostList(MAP_ROWS, vector<int>(MAP_COLS, 1));
 	dijkstraImpl = make_unique<DijkstraSP>(MAP_ROWS, MAP_COLS, (AlgorithmFrame*)this);
-	dijkstraImpl->setCostList(initialCostList);
 
-	for (int i = 0; i < MAP_ROWS; i++)
-		for (int j = 0; j < MAP_COLS; j++) {
-			const int FIRST_DIM_EQ = i * MAP_COLS + j;
-			mapButtons[FIRST_DIM_EQ]->SetLabelText("1");
-			mapButtons[FIRST_DIM_EQ]->SetBackgroundColour(def_col::IDLE_COLOUR);
-		}
-
+	dijkstraImpl->generateValues(algorithmThread);
+	
 	cPathFindWindow::enableMapButtons();
 	cPathFindWindow::enableToolbarButtons();
-	generateCostButton->Enable();
 }
 
 void cPathFindWindow::setupDfs() {
 
 	dfsImpl = make_unique<DFSimpl>(MAP_ROWS, MAP_COLS, (AlgorithmFrame*)this);
 
-	for (int i = 0; i < MAP_ROWS; i++)
-		for (int j = 0; j < MAP_COLS; j++) {
-			const int FIRST_DIM_EQ = i * MAP_COLS + j;
-			mapButtons[FIRST_DIM_EQ]->SetLabelText(to_string(FIRST_DIM_EQ));
-			mapButtons[FIRST_DIM_EQ]->SetBackgroundColour(def_col::IDLE_COLOUR);
-		}
+	dfsImpl->generateValues(algorithmThread);
 
 	cPathFindWindow::enableMapButtons();
 	cPathFindWindow::enableToolbarButtons();
-	generateCostButton->Disable();
 
 }
 
@@ -132,16 +110,10 @@ void cPathFindWindow::setupBfs() {
 
 	bfsImpl = make_unique<BFSimpl>(MAP_ROWS, MAP_COLS, (AlgorithmFrame*)this);
 
-	for (int i = 0; i < MAP_ROWS; i++)
-		for (int j = 0; j < MAP_COLS; j++) {
-			const int FIRST_DIM_EQ = i * MAP_COLS + j;
-			mapButtons[FIRST_DIM_EQ]->SetLabelText(to_string(FIRST_DIM_EQ));
-			mapButtons[FIRST_DIM_EQ]->SetBackgroundColour(def_col::IDLE_COLOUR);
-		}
+	bfsImpl->generateValues(algorithmThread);
 
 	cPathFindWindow::enableMapButtons();
 	cPathFindWindow::enableToolbarButtons();
-	generateCostButton->Disable();
 
 }
 
@@ -185,14 +157,7 @@ void cPathFindWindow::dijkstraButtonClickAction(wxButton* buttonClicked) {
 	}
 
 	case IDLE:
-
-		if (FIRST_DIM_EQ != dijkstraImpl->getSource()) {
-			int i = FIRST_DIM_EQ / MAP_COLS;
-			int j = FIRST_DIM_EQ % MAP_COLS;
-			dijkstraImpl->incrementCellCost(i, j);
-			buttonClicked->SetLabelText(to_string(dijkstraImpl->checkCellCost(i, j)));
-		}
-
+		
 		break;
 
 	case FINISHED:
@@ -269,25 +234,6 @@ void cPathFindWindow::sourceSetButtonClicked(wxCommandEvent& evt) {
 }
 
 
-void cPathFindWindow::generateRandomCost(wxCommandEvent& evt) {
-	srand(time(NULL));
-
-	vector<vector<int>> costList(MAP_ROWS, vector<int>(MAP_COLS, 1));
-	for (int i = 0; i < MAP_ROWS; i++) {
-		for (int j = 0; j < MAP_COLS; j++) {
-			const int FIRST_DIM_EQ = i * MAP_COLS + j;
-
-			int randomNum = rand() % 100;
-			costList[i][j] = randomNum;
-
-			if (FIRST_DIM_EQ != dijkstraImpl->getSource());
-			mapButtons[FIRST_DIM_EQ]->SetLabelText(to_string(randomNum));
-		}
-	}
-
-	dijkstraImpl->setCostList(costList);
-}
-
 void cPathFindWindow::onStart(wxCommandEvent& evt) {
 
 	switch (currentMapState) {
@@ -351,7 +297,7 @@ void cPathFindWindow::runDijkstra() {
 
 	if (dijkstraImpl->getSource() != -1) {
 		dijkstraImpl->setBlockedCells(mapButtonBlocked);
-		cPathFindWindow::assignAlgorithmThread([this]() -> void {this->dijkstraImpl->runDijkstraAlgorithm(algorithmThread); });
+		cPathFindWindow::assignAlgorithmThread([this]() -> void {this->dijkstraImpl->runAlgorithm(algorithmThread); });
 
 	}
 
@@ -361,7 +307,7 @@ void cPathFindWindow::runDfs() {
 
 	if (dfsImpl->getSource() != -1) {
 		dfsImpl->setBlockedCells(mapButtonBlocked);
-		cPathFindWindow::assignAlgorithmThread([this]() -> void { this->dfsImpl->runDfsAlgorithm(algorithmThread); });
+		cPathFindWindow::assignAlgorithmThread([this]() -> void { this->dfsImpl->runAlgorithm(algorithmThread); });
 	}
 }
 
@@ -369,7 +315,7 @@ void cPathFindWindow::runBfs() {
 
 	if (bfsImpl->getSource() != -1) {
 		bfsImpl->setBlockedCells(mapButtonBlocked);
-		cPathFindWindow::assignAlgorithmThread([this]() -> void { this->bfsImpl->runBfsAlgorithm(algorithmThread); });
+		cPathFindWindow::assignAlgorithmThread([this]() -> void { this->bfsImpl->runAlgorithm(algorithmThread); });
 	}
 
 }
@@ -394,7 +340,10 @@ void cPathFindWindow::cellVisitedUpdate(wxThreadEvent& evt) {
 
 	cPathFindWindow::updateCellColor(FIRST_DIM_EQ, newColour);
 
-	if (newValue != -1)
+	if (newValue == -1)
+		cPathFindWindow::updateCellValue(FIRST_DIM_EQ, wxString(""));
+
+	else
 		cPathFindWindow::updateCellValue(FIRST_DIM_EQ, wxString(to_string(newValue)));
 
 }
@@ -469,14 +418,12 @@ void cPathFindWindow::enableToolbarButtons()
 {
 	algorithmChoice->Enable();
 	sourceButton->Enable();
-	generateCostButton->Enable();
 }
 
 void cPathFindWindow::disableToolbarButtons()
 {
 	algorithmChoice->Disable();
 	sourceButton->Disable();
-	generateCostButton->Disable();
 }
 
 cPathFindWindow::~cPathFindWindow() {

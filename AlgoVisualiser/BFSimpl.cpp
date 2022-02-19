@@ -2,10 +2,7 @@
 
 using namespace std;
 using namespace def_type;
-BFSimpl::BFSimpl(const int& MAP_ROWS, const int& MAP_COLS, wxEvtHandler* handler) : parentEvtHandler(handler) {
-
-	this->MAP_ROWS = MAP_ROWS;
-	this->MAP_COLS = MAP_COLS;
+BFSimpl::BFSimpl(const int& MAP_ROWS, const int& MAP_COLS, wxEvtHandler* handler) : GraphAlgorithm(MAP_ROWS, MAP_COLS, handler) {
 
 	adjList = make_unique<vector2DInt>(MAP_ROWS * MAP_COLS, vector1DInt());
 	visList = make_unique<vector1DBool>(MAP_ROWS * MAP_COLS, false);
@@ -13,11 +10,37 @@ BFSimpl::BFSimpl(const int& MAP_ROWS, const int& MAP_COLS, wxEvtHandler* handler
 
 }
 
-void BFSimpl::setSource(const int& src) {
-	source = src;
+BFSimpl::~BFSimpl() {
+
 }
+
+void BFSimpl::setSource(const int& src) {
+	m_source = src;
+}
+
 int BFSimpl::getSource() {
-	return source;
+	return m_source;
+}
+
+void BFSimpl::generateValues(AlgorithmThread* workingThread)
+{
+	for (int i = 0; i < m_MAP_ROWS; i++)
+	{
+		for (int j = 0; j < m_MAP_COLS; j++)
+		{
+			const int FIRST_DIM_EQ = i * m_MAP_COLS + j;
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, -1, wxColour(255, 255, 255));
+			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
+
+		}
+	}
+}
+
+void BFSimpl::runAlgorithm(AlgorithmThread* workingThread)
+{
+	BFSimpl::applyAdjList();
+	int when = 1;
+	bfs(m_source, when, workingThread);
 }
 
 
@@ -25,12 +48,8 @@ void BFSimpl::setBlockedCells(vector1DBool& blockedCells) {
 	mapBlockedCells = blockedCells;
 }
 
-void BFSimpl::runBfsAlgorithm(AlgorithmThread* workingThread) {
-	BFSimpl::applyAdjList();
-	bfs(source, workingThread);
-}
 
-void BFSimpl::bfs(int src, AlgorithmThread* workingThread) {
+void BFSimpl::bfs(const int& src, int& when, AlgorithmThread* workingThread) {
 	queue<int> q;
 
 	(*visList)[src] = true;
@@ -43,8 +62,8 @@ void BFSimpl::bfs(int src, AlgorithmThread* workingThread) {
 
 		//checking if thread was destroyed in parent
 		if (!workingThread->TestDestroy()) {
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(front, front, wxColour(204, 204, 0));
-			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, parentEvtHandler, *THREAD_DATA);
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(front, when++, wxColour(204, 204, 0));
+			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 			wxMilliSleep(100);
 		}
 
@@ -66,8 +85,8 @@ void BFSimpl::bfs(int src, AlgorithmThread* workingThread) {
 }
 
 void BFSimpl::applyAdjList() {
-	for (int i = 0; i < MAP_ROWS; i++)
-		for (int j = 0; j < MAP_COLS; j++) {
+	for (int i = 0; i < m_MAP_ROWS; i++)
+		for (int j = 0; j < m_MAP_COLS; j++) {
 			BFSimpl::addNeighbours(i, j);
 		}
 
@@ -77,11 +96,11 @@ void BFSimpl::showPathToSource(const int& t_vertexFrom, AlgorithmThread* working
 
 	int temp = t_vertexFrom;
 
-	while (temp != source) {
+	while (temp != m_source) {
 
 		if (!workingThread->TestDestroy()) {
 			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, -1, wxColour(51, 255, 51));
-			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, parentEvtHandler, *THREAD_DATA);
+			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 			wxMilliSleep(100);
 		}
 
@@ -95,13 +114,20 @@ void BFSimpl::showPathToSource(const int& t_vertexFrom, AlgorithmThread* working
 
 }
 
-void BFSimpl::addNeighbours(int i, int j) {
 
+bool BFSimpl::isSafe(const int& i, const int& j) {
+
+	return ((i >= 0 && j >= 0) && (i < m_MAP_ROWS && j < m_MAP_COLS));
+
+}
+
+void BFSimpl::addNeighbours(const int& i, const int& j)
+{
 	for (int x = -1; x <= 1; x++)
 		for (int y = -1; y <= 1; y++) {
 			if (!(x == 0 && y == 0) && isSafe(i + x, j + y)) {
-				int currentCellNum = i * MAP_COLS + j;
-				int neighCellNum = (i + x) * MAP_COLS + (j + y);
+				int currentCellNum = i * m_MAP_COLS + j;
+				int neighCellNum = (i + x) * m_MAP_COLS + (j + y);
 
 				if (!mapBlockedCells[currentCellNum] && !mapBlockedCells[neighCellNum])
 					(*adjList)[currentCellNum].push_back(neighCellNum);
@@ -109,15 +135,4 @@ void BFSimpl::addNeighbours(int i, int j) {
 
 			}
 		}
-}
-
-
-bool BFSimpl::isSafe(const int& i, const int& j) {
-
-	return ((i >= 0 && j >= 0) && (i < MAP_ROWS&& j < MAP_COLS));
-
-}
-
-BFSimpl::~BFSimpl() {
-
 }

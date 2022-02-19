@@ -34,7 +34,6 @@ private:
 	wxChoice* algorithmChoice = nullptr;
 	wxButton* startButton = nullptr;
 	wxButton* sourceButton = nullptr;
-	wxButton* generateCostButton = nullptr;
 
 	//side thread to proccess algorithms
 	AlgorithmThread* algorithmThread = nullptr;
@@ -109,7 +108,6 @@ private:
 	void bfsButtonClickAction(wxButton* t_buttonClicked);
 	
 	void buttonClickAction(wxButton* t_buttonClicked);
-	void generateRandomCost(wxCommandEvent& evt);
 
 public:
 	cPathFindWindow();

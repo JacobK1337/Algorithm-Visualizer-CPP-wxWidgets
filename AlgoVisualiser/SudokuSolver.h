@@ -10,6 +10,7 @@ public:
 	SudokuSolver(const int& MAP_SIZE, wxEvtHandler* handler);
 	~SudokuSolver();
 	void runAlgorithm(AlgorithmThread* workingThread);
+	void generateValues(AlgorithmThread* workingThread);
 private:
 	const unsigned int m_MAP_SIZE;
 	unsigned int m_DIAG_SQRT;
@@ -22,9 +23,9 @@ private:
 	std::unique_ptr<def_type::CELL_UPDATE_INFO> THREAD_DATA;
 
 	void solveSudoku(AlgorithmThread* workingThread);
-	void generateValidSudoku();
 	void generateValidSquare(const int& ROW, const int& COL);
 	bool generateRemainingValues(const int& FIRST_DIM_EQ);
+	void unFillCells(const int& NUM);
 	bool valueAvailableInSquare(const int& ROW, const int& COL, const int& NUM);
 	bool valueAvailableInRow(const int& ROW, const int& NUM);
 	bool valueAvailableInCol(const int& COL, const int& NUM);

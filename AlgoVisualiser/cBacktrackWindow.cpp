@@ -6,16 +6,16 @@ wxEND_EVENT_TABLE()
 
 cBacktrackWindow::cBacktrackWindow() : AlgorithmFrame(wxString("Backtracking algorithms"), wxPoint(10, 10), wxSize(1600, 1000)) {
 	this->SetBackgroundColour(wxColour(0, 0, 0));
-
 	setupToolbar();
 
 	Connect(evt_id::MAP_UPDATE_REQUEST_ID, wxEVT_MAP_UPDATE_REQUEST, wxThreadEventHandler(cBacktrackWindow::cellVisitedUpdate));
 	Connect(evt_id::MAP_UNCHECK_REQUEST_ID, wxEVT_MAP_UNCHECK_REQUEST, wxThreadEventHandler(cBacktrackWindow::cellUncheckUpdate));
 
 	frameContent = new wxPanel(this, wxID_ANY, wxDefaultPosition);
-	frameContent->SetBackgroundColour(wxColour(43, 201, 231));
+	frameContent->SetBackgroundColour(wxColour(0, 0, 0));
 
 	mapButtons = new wxButton * [MAP_ROWS * MAP_COLS];
+
 	setupMap();
 }
 
@@ -68,12 +68,7 @@ void cBacktrackWindow::setupSudokuSolver()
 {
 	this->sudokuSolver = std::make_unique<SudokuSolver>(9, (AlgorithmFrame*)this);
 
-	for (int i = 0; i < MAP_ROWS; i++)
-		for (int j = 0; j < MAP_COLS; j++) {
-			const int FIRST_DIM_EQ = i * MAP_COLS + j;
-			mapButtons[FIRST_DIM_EQ]->SetLabelText(wxString(""));
-			mapButtons[FIRST_DIM_EQ]->SetBackgroundColour(wxColour(255, 255, 255));
-		}
+	sudokuSolver->generateValues(algorithmThread);
 
 	cBacktrackWindow::enableMapButtons();
 	cBacktrackWindow::enableToolbarButtons();
@@ -316,7 +311,11 @@ void cBacktrackWindow::cellVisitedUpdate(wxThreadEvent& evt)
 	wxColour newColour = NEW_DATA.newColour;
 
 	cBacktrackWindow::updateCellColor(FIRST_DIM_EQ, newColour);
-	cBacktrackWindow::updateCellValue(FIRST_DIM_EQ, wxString(std::to_string(newValue)));
+	if(newValue == -1)
+		cBacktrackWindow::updateCellValue(FIRST_DIM_EQ, wxString(""));
+
+	else
+		cBacktrackWindow::updateCellValue(FIRST_DIM_EQ, wxString(std::to_string(newValue)));
 
 
 }

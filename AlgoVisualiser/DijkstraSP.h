@@ -2,42 +2,36 @@
 #include<wx/wx.h>
 #include<vector>
 #include<queue>
-#include"defined_typenames.h"
-#include"declared_events.h"
-#include"AlgorithmThread.h"
+#include"GraphAlgorithm.h"
 
-class DijkstraSP
+class DijkstraSP : public GraphAlgorithm
 {
 private:
-	
-	int VERTEX_COUNT;
-	int source = -1;
-
 	std::unique_ptr<def_type::vector2DPair> adjList;
 	std::unique_ptr<def_type::vector1DInt> ancestor;
 	std::unique_ptr<def_type::vector1DInt> shortestDistance;
-	def_type::vector2DInt costList;
+	std::unique_ptr<def_type::vector2DInt> costList;
 
 	def_type::vector1DBool mapButtonBlocked;
-
-	wxEvtHandler* parentEvtHandler = nullptr;
 	std::unique_ptr<def_type::CELL_UPDATE_INFO> THREAD_DATA;
 
-	void addNeighbours(int i, int j);
-	void applyAdjList();
-	bool isSafe(int i, int j, const int ROW_LIMIT, const int COL_LIMIT);
+	void dijkstra(AlgorithmThread* workingThread);
 
 public:
-	DijkstraSP(const int t_MAP_ROWS, const int t_MAP_COLS, wxEvtHandler* handler);
+	DijkstraSP(const int& MAP_ROWS, const int& MAP_COLS, wxEvtHandler* handler);
 	~DijkstraSP();
 
-	void setCostList(def_type::vector2DInt& costList);
 	void setBlockedCells(def_type::vector1DBool& blockedButtons);
-	void incrementCellCost(const int i, const int j);
-	int checkCellCost(const int i, const int j);
-	void setSource(int src);
+
 	int getSource();
 	const int getShortestDistance(const int FIRST_DIM_EQ);
-	void runDijkstraAlgorithm(AlgorithmThread* workingThread);
-	void showPathToSource(int t_vertexFrom, AlgorithmThread* workingThread);
+
+	// Odziedziczono za poœrednictwem elementu GraphAlgorithm
+	virtual void generateValues(AlgorithmThread* workingThread) override;
+	virtual void runAlgorithm(AlgorithmThread* workingThread) override;
+	virtual void setSource(const int& t_newSource) override;
+	virtual void showPathToSource(const int& t_vertexFrom, AlgorithmThread* workingThread) override;
+	virtual void addNeighbours(const int& i, const int& j) override;
+	virtual void applyAdjList() override;
+	virtual bool isSafe(const int& i, const int& j) override;
 };

@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Algorithm.h" />
     <ClInclude Include="AlgorithmFrame.h" />
     <ClInclude Include="BFSimpl.h" />
     <ClInclude Include="cApp.h" />
@@ -30,12 +31,13 @@
     <ClInclude Include="defined_typenames.h" />
     <ClInclude Include="DFSimpl.h" />
     <ClInclude Include="DijkstraSP.h" />
-    <ClInclude Include="KruskalMST.h" />
+    <ClInclude Include="GraphAlgorithm.h" />
     <ClInclude Include="KTPImpl.h" />
     <ClInclude Include="AlgorithmThread.h" />
     <ClInclude Include="SudokuSolver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Algorithm.cpp" />
     <ClCompile Include="AlgorithmFrame.cpp" />
     <ClCompile Include="BFSimpl.cpp" />
     <ClCompile Include="cApp.cpp" />
@@ -44,7 +46,7 @@
     <ClCompile Include="cPathFindWindow.cpp" />
     <ClCompile Include="DFSimpl.cpp" />
     <ClCompile Include="DijkstraSP.cpp" />
-    <ClCompile Include="KruskalMST.cpp" />
+    <ClCompile Include="GraphAlgorithm.cpp" />
     <ClCompile Include="KTPImpl.cpp" />
     <ClCompile Include="AlgorithmThread.cpp" />
     <ClCompile Include="SudokuSolver.cpp" />

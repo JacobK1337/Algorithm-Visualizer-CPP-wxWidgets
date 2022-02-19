@@ -2,42 +2,60 @@
 
 using namespace std;
 using namespace def_type;
-DFSimpl::DFSimpl(const int& MAP_ROWS, const int& MAP_COLS, wxEvtHandler* handler) : parentEvtHandler(handler) {
-
-	this->MAP_ROWS = MAP_ROWS;
-	this->MAP_COLS = MAP_COLS;
+DFSimpl::DFSimpl(const int& MAP_ROWS, const int& MAP_COLS, wxEvtHandler* handler) : GraphAlgorithm(MAP_ROWS, MAP_COLS, handler) {
 
 	adjList = make_unique<vector2DInt>(MAP_ROWS * MAP_COLS, vector1DInt());
 	visList = make_unique<vector1DBool>(MAP_ROWS * MAP_COLS, false);
 	ancestor = make_unique<vector1DInt>(MAP_ROWS * MAP_COLS, -1);
+}
+
+DFSimpl::~DFSimpl() {
 
 }
 
-void DFSimpl::setSource(const int src) {
-	source = src;
+void DFSimpl::generateValues(AlgorithmThread* workingThread)
+{
+	for (int i = 0; i < m_MAP_ROWS; i++)
+	{
+		for (int j = 0; j < m_MAP_COLS; j++)
+		{
+			const int FIRST_DIM_EQ = i * m_MAP_COLS + j;
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, -1, wxColour(255,255,255));
+			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
+
+		}
+	}
 }
+
+void DFSimpl::setSource(const int& t_newSource)
+{
+	m_source = t_newSource;
+}
+
 int DFSimpl::getSource() {
-	return source;
+	return m_source;
 }
 
 void DFSimpl::setBlockedCells(vector<bool>& blockedCells) {
 	mapBlockedCells = blockedCells;
 }
 
-void DFSimpl::runDfsAlgorithm(AlgorithmThread* workingThread) {
+void DFSimpl::runAlgorithm(AlgorithmThread* workingThread)
+{
 	DFSimpl::applyAdjList();
-	(*ancestor)[source] = source;
-	dfs(source, workingThread);
+	(*ancestor)[m_source] = m_source;
+	int when = 1;
+	dfs(m_source, when, workingThread);
 }
 
-void DFSimpl::dfs(const int& src, AlgorithmThread* workingThread) {
+void DFSimpl::dfs(const int& src, int& when, AlgorithmThread* workingThread) {
 
 	(*visList)[src] = true;
 
-	if (src != source && !workingThread->TestDestroy()) {
+	if (src != m_source && !workingThread->TestDestroy()) {
 
-		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(src, src, wxColour(204, 204, 0));
-		evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, parentEvtHandler, *THREAD_DATA);
+		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(src, when, wxColour(204, 204, 0));
+		evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 		wxMilliSleep(100);
 	}
 
@@ -51,21 +69,37 @@ void DFSimpl::dfs(const int& src, AlgorithmThread* workingThread) {
 
 		if (!(*visList)[curr]) {
 			(*ancestor)[curr] = src;
-			dfs(curr, workingThread);
+			dfs(curr, ++when, workingThread);
 		}
 	}
 
 }
 
-void DFSimpl::showPathToSource(const int t_vertexFrom, AlgorithmThread* workingThread) {
+void DFSimpl::applyAdjList() {
+	for (int i = 0; i < m_MAP_ROWS; i++)
+		for (int j = 0; j < m_MAP_COLS; j++) {
+			DFSimpl::addNeighbours(i, j);
+		}
 
+}
+
+bool DFSimpl::isSafe(const int& i, const int& j)
+{
+	return ((i >= 0 && j >= 0) && (i < m_MAP_ROWS && j < m_MAP_COLS));
+
+}
+
+
+
+void DFSimpl::showPathToSource(const int& t_vertexFrom, AlgorithmThread* workingThread)
+{
 	int temp = t_vertexFrom;
 
-	while (temp != source) {
+	while (temp != m_source) {
 
 		if (!workingThread->TestDestroy()) {
 			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, -1, wxColour(51, 255, 51));
-			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, parentEvtHandler, *THREAD_DATA);
+			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 			wxMilliSleep(100);
 		}
 
@@ -76,24 +110,15 @@ void DFSimpl::showPathToSource(const int t_vertexFrom, AlgorithmThread* workingT
 
 		temp = (*ancestor)[temp];
 	}
-
 }
 
-void DFSimpl::applyAdjList() {
-	for (int i = 0; i < MAP_ROWS; i++)
-		for (int j = 0; j < MAP_COLS; j++) {
-			DFSimpl::addNeighbours(i, j);
-		}
-
-}
-
-void DFSimpl::addNeighbours(int i, int j) {
-
+void DFSimpl::addNeighbours(const int& i, const int& j)
+{
 	for (int x = -1; x <= 1; x++)
 		for (int y = -1; y <= 1; y++) {
 			if (!(x == 0 && y == 0) && isSafe(i + x, j + y)) {
-				int currentCellNum = i * MAP_COLS + j;
-				int neighCellNum = (i + x) * MAP_COLS + (j + y);
+				int currentCellNum = i * m_MAP_COLS + j;
+				int neighCellNum = (i + x) * m_MAP_COLS + (j + y);
 
 				if (!mapBlockedCells[currentCellNum] && !mapBlockedCells[neighCellNum])
 					(*adjList)[currentCellNum].push_back(neighCellNum);
@@ -103,12 +128,3 @@ void DFSimpl::addNeighbours(int i, int j) {
 		}
 }
 
-
-bool DFSimpl::isSafe(int i, int j) {
-
-	return ((i >= 0 && j >= 0) && (i < MAP_ROWS&& j < MAP_COLS));
-
-}
-DFSimpl::~DFSimpl() {
-
-}
