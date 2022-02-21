@@ -10,6 +10,7 @@ public:
 	~Algorithm();
 	virtual void generateValues(AlgorithmThread* workingThread) = 0;
 	virtual void runAlgorithm(AlgorithmThread* workingThread) = 0;
+
 protected:
 	const int m_MAP_ROWS;
 	const int m_MAP_COLS;

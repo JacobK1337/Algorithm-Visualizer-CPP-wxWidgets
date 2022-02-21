@@ -5,15 +5,20 @@
 class DFSimpl : public GraphAlgorithm
 {
 private:
-	std::unique_ptr<def_type::vector2DInt> adjList;
-	std::unique_ptr<def_type::vector1DBool> visList;
-	std::unique_ptr<def_type::vector1DInt> ancestor;
+	
+	struct cellInfo {
+		int parent;
+		int when;
+		cellInfo() {}
+		cellInfo(int t_parent, int t_when) :
+			parent(t_parent),
+			when(t_when){}
+	};
 
 	def_type::vector1DBool mapBlockedCells;
-
 	std::unique_ptr<def_type::CELL_UPDATE_INFO> THREAD_DATA;
 	
-	void dfs(const int& src, int& when, AlgorithmThread* workingThread);
+	void dfs(const int& src, std::vector<cellInfo>& finalPath, std::vector<bool>& visited, AlgorithmThread* workingThread);
 
 
 public:
@@ -26,7 +31,9 @@ public:
 	virtual void generateValues(AlgorithmThread* workingThread) override;
 	virtual void runAlgorithm(AlgorithmThread* workingThread) override;
 	virtual void setSource(const int& t_newSource) override;
+	void setDest(const int& t_newDest);
 	virtual void showPathToSource(const int& t_vertexFrom, AlgorithmThread* workingThread) override;
+	void showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread* workingThread);
 	virtual void addNeighbours(const int& i, const int& j) override;
 	virtual void applyAdjList() override;
 	virtual bool isSafe(const int& i, const int& j) override;

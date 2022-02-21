@@ -17,16 +17,18 @@ SudokuSolver::~SudokuSolver()
 void SudokuSolver::runAlgorithm(AlgorithmThread* workingThread)
 {
 
-	SudokuSolver::solveSudoku(0, workingThread);
+	int startPoint = 0;
+	while ((*sudokuMap)[startPoint / m_MAP_ROWS][startPoint % m_MAP_COLS] != -1)
+		startPoint++;
+
+	SudokuSolver::solveSudoku(startPoint, workingThread);
 }
 
 
-bool SudokuSolver::solveSudoku(const int& FIRST_DIM_EQ, AlgorithmThread* workingThread)
+bool SudokuSolver::solveSudoku(int FIRST_DIM_EQ, AlgorithmThread* workingThread)
 {
 	if (FIRST_DIM_EQ >= m_MAP_ROWS * m_MAP_COLS - 1)
 		return true;
-
-	//possible values are <1, m_MAP_SIZE>
 
 	const int ROW = FIRST_DIM_EQ / m_MAP_COLS;
 	const int COL = FIRST_DIM_EQ % m_MAP_COLS;
@@ -41,6 +43,10 @@ bool SudokuSolver::solveSudoku(const int& FIRST_DIM_EQ, AlgorithmThread* working
 			(*colFilled)[COL] ++;
 
 			int nextCell = FIRST_DIM_EQ + 1;
+
+			while ((*sudokuMap)[nextCell / m_MAP_COLS][nextCell % m_MAP_COLS] != -1 && nextCell < m_MAP_COLS * m_MAP_COLS - 1)
+				nextCell++;
+
 
 			if (!workingThread->TestDestroy()) {
 				THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, i, wxColour(255, 255, 255));
@@ -60,9 +66,6 @@ bool SudokuSolver::solveSudoku(const int& FIRST_DIM_EQ, AlgorithmThread* working
 
 			if ((*colFilled)[COL] == m_MAP_COLS)
 				SudokuSolver::setColFinished(COL, true);
-
-			while ((*sudokuMap)[nextCell / m_MAP_COLS][nextCell % m_MAP_COLS] != -1 && nextCell < m_MAP_COLS * m_MAP_COLS - 1)
-				nextCell++;
 
 			if (SudokuSolver::solveSudoku(nextCell, workingThread))
 				return true;

@@ -4,9 +4,6 @@ using namespace std;
 using namespace def_type;
 DFSimpl::DFSimpl(const int& MAP_ROWS, const int& MAP_COLS, wxEvtHandler* handler) : GraphAlgorithm(MAP_ROWS, MAP_COLS, handler) {
 
-	adjList = make_unique<vector2DInt>(MAP_ROWS * MAP_COLS, vector1DInt());
-	visList = make_unique<vector1DBool>(MAP_ROWS * MAP_COLS, false);
-	ancestor = make_unique<vector1DInt>(MAP_ROWS * MAP_COLS, -1);
 }
 
 DFSimpl::~DFSimpl() {
@@ -36,25 +33,31 @@ int DFSimpl::getSource() {
 	return m_source;
 }
 
+void DFSimpl::setDest(const int& t_newDest) {
+	m_dest = t_newDest;
+}
+
 void DFSimpl::setBlockedCells(vector<bool>& blockedCells) {
 	mapBlockedCells = blockedCells;
 }
 
 void DFSimpl::runAlgorithm(AlgorithmThread* workingThread)
 {
-	DFSimpl::applyAdjList();
-	(*ancestor)[m_source] = m_source;
-	int when = 1;
-	dfs(m_source, when, workingThread);
+	std::vector<cellInfo> finalPath(m_MAP_ROWS * m_MAP_COLS, {-1, -1});
+	std::vector<bool> visited(m_MAP_ROWS * m_MAP_COLS, false);
+
+	finalPath[m_source] = { m_source, 0 };
+	
+	dfs(m_source, finalPath, visited, workingThread);
 }
 
-void DFSimpl::dfs(const int& src, int& when, AlgorithmThread* workingThread) {
+void DFSimpl::dfs(const int& src, std::vector<cellInfo>& finalPath, std::vector<bool>& visited, AlgorithmThread* workingThread) {
 
-	(*visList)[src] = true;
+	visited[src] = true;
 
 	if (src != m_source && !workingThread->TestDestroy()) {
 
-		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(src, when, wxColour(204, 204, 0));
+		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(src, finalPath[src].when, wxColour(204, 204, 0));
 		evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 		wxMilliSleep(100);
 	}
@@ -64,14 +67,25 @@ void DFSimpl::dfs(const int& src, int& when, AlgorithmThread* workingThread) {
 		return;
 	}
 
-	for (int i = 0; i < (*adjList)[src].size(); i++) {
-		int curr = (*adjList)[src][i];
-
-		if (!(*visList)[curr]) {
-			(*ancestor)[curr] = src;
-			dfs(curr, ++when, workingThread);
-		}
+	if (src == m_dest) {
+		DFSimpl::showPathToSource(finalPath, workingThread);
+		return;
 	}
+
+	for(int x = -1; x <= 1; x++)
+		for (int y = -1; y <= 1; y++) {
+
+			int nextCellX = src / m_MAP_COLS + x;
+			int nextCellY = src % m_MAP_COLS + y;
+			int nextCellNum = nextCellX * m_MAP_COLS + nextCellY;
+
+			if (isSafe(nextCellX, nextCellY) && !(x == 0 && y == 0) && !visited[nextCellNum]) {
+				finalPath[nextCellNum].parent = src;
+				finalPath[nextCellNum].when = finalPath[src].when + 1;
+				dfs(nextCellNum, finalPath, visited, workingThread);
+			}
+				
+		}
 
 }
 
@@ -85,7 +99,7 @@ void DFSimpl::applyAdjList() {
 
 bool DFSimpl::isSafe(const int& i, const int& j)
 {
-	return ((i >= 0 && j >= 0) && (i < m_MAP_ROWS && j < m_MAP_COLS));
+	return ((i >= 0 && j >= 0) && (i < m_MAP_ROWS && j < m_MAP_COLS) && !mapBlockedCells[i * m_MAP_COLS + j]);
 
 }
 
@@ -93,13 +107,23 @@ bool DFSimpl::isSafe(const int& i, const int& j)
 
 void DFSimpl::showPathToSource(const int& t_vertexFrom, AlgorithmThread* workingThread)
 {
-	int temp = t_vertexFrom;
+	
+}
+
+void DFSimpl::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread* workingThread) {
+	
+	int temp = m_dest;
 
 	while (temp != m_source) {
 
 		if (!workingThread->TestDestroy()) {
 			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, -1, wxColour(51, 255, 51));
 			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
+			if (finalPath[temp].parent == -1)
+				return;
+
+			else
+				temp = finalPath[temp].parent;
 			wxMilliSleep(100);
 		}
 
@@ -108,23 +132,12 @@ void DFSimpl::showPathToSource(const int& t_vertexFrom, AlgorithmThread* working
 			return;
 		}
 
-		temp = (*ancestor)[temp];
+		
 	}
 }
 
 void DFSimpl::addNeighbours(const int& i, const int& j)
 {
-	for (int x = -1; x <= 1; x++)
-		for (int y = -1; y <= 1; y++) {
-			if (!(x == 0 && y == 0) && isSafe(i + x, j + y)) {
-				int currentCellNum = i * m_MAP_COLS + j;
-				int neighCellNum = (i + x) * m_MAP_COLS + (j + y);
-
-				if (!mapBlockedCells[currentCellNum] && !mapBlockedCells[neighCellNum])
-					(*adjList)[currentCellNum].push_back(neighCellNum);
-
-
-			}
-		}
+	
 }
 

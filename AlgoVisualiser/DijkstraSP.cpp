@@ -4,8 +4,6 @@ using namespace std;
 using namespace def_type;
 DijkstraSP::DijkstraSP(const int& MAP_ROWS, const int& MAP_COLS, wxEvtHandler* handler) : GraphAlgorithm(MAP_ROWS, MAP_COLS, handler) {
 
-	adjList = make_unique<vector2DPair>(m_MAP_ROWS * m_MAP_COLS, vector1DPair());
-
 }
 DijkstraSP::~DijkstraSP() {
 
@@ -19,7 +17,9 @@ void DijkstraSP::setSource(const int& t_newSource)
 int DijkstraSP::getSource() {
 	return m_source;
 }
-
+void DijkstraSP::setDest(const int& t_newDest) {
+	m_dest = t_newDest;
+}
 void DijkstraSP::setBlockedCells(vector1DBool& blockedButtons) {
 	mapButtonBlocked = blockedButtons;
 }
@@ -48,67 +48,71 @@ void DijkstraSP::generateValues(AlgorithmThread* workingThread)
 
 void DijkstraSP::runAlgorithm(AlgorithmThread* workingThread)
 {
-	DijkstraSP::applyAdjList();
-	DijkstraSP::dijkstra(workingThread);
-	
+
+	std::vector<cellInfo> finalPath(m_MAP_ROWS * m_MAP_COLS, { -1, INT_MAX });
+	DijkstraSP::dijkstra(finalPath, workingThread);
 }
 
-void DijkstraSP::dijkstra(AlgorithmThread* workingThread) {
+void DijkstraSP::dijkstra(std::vector<cellInfo>& finalPath, AlgorithmThread* workingThread) {
 
 	priority_queue<pair<int, int>, vector<pair<int, int>>, greater<> > currentDistances;
-
-	shortestDistance = make_unique<vector1DInt>(m_MAP_ROWS * m_MAP_COLS, INT_MAX);
-	ancestor = make_unique<vector1DInt>(m_MAP_ROWS * m_MAP_COLS, -1);
-
-	(*shortestDistance)[m_source] = 0;
-	(*ancestor)[m_source] = m_source;
+	finalPath[m_source].parent = m_source;
+	finalPath[m_source].cost = 0;
 
 	currentDistances.push(make_pair(0, m_source));
 	while (!currentDistances.empty()) {
 
 		int curr = currentDistances.top().second;
 		currentDistances.pop();
-		for (int i = 0; i < (*adjList)[curr].size(); i++) {
 
-			int v = (*adjList)[curr][i].first;
-			int cost = (*adjList)[curr][i].second;
+		for (int x = -1; x <= 1; x++)
+			for (int y = -1; y <= 1; y++) {
 
-			if ((*shortestDistance)[v] > (*shortestDistance)[curr] + cost) {
+				int nextCellX = curr / m_MAP_COLS + x;
+				int nextCellY = curr % m_MAP_COLS + y;
+				int nextCellNum = nextCellX * m_MAP_COLS + nextCellY;
+				if (isSafe(nextCellX, nextCellY) && !(x == 0 && y == 0)) {
 
-				if (workingThread->TestDestroy()) {
+					int currCost = (*costList)[nextCellX][nextCellY];
+					if (finalPath[nextCellNum].cost > finalPath[curr].cost + currCost) {
 
-					workingThread->flagThreadBreak(true);
-					return;
+						finalPath[nextCellNum].cost = finalPath[curr].cost + currCost;
+						finalPath[nextCellNum].parent = curr;
+						currentDistances.push(make_pair(finalPath[nextCellNum].cost, nextCellNum));
 
+						if (!workingThread->TestDestroy() && nextCellNum != m_dest) {
+							THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(nextCellNum, finalPath[nextCellNum].cost, wxColour(204, 204, 0));
+							evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
+							wxMilliSleep(100);
+						}
+
+						else if(workingThread->TestDestroy()) {
+							workingThread->flagThreadBreak(true);
+							return;
+						}
+					}
 				}
-
-				if (!workingThread->TestDestroy()) {
-
-					(*shortestDistance)[v] = (*shortestDistance)[curr] + cost;
-					(*ancestor)[v] = curr;
-					currentDistances.push(make_pair((*shortestDistance)[v], v));
-					THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(v, (*shortestDistance)[v], wxColour(204, 204, 0));
-					evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
-					wxMilliSleep(100);
-
-				}
-
 			}
-		}
 	}
+
+	DijkstraSP::showPathToSource(finalPath, workingThread);
 }
 
-void DijkstraSP::showPathToSource(const int& t_vertexFrom, AlgorithmThread* workingThread)
-{
-	int temp = t_vertexFrom;
+void DijkstraSP::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread* workingThread) {
 
+	int temp = m_dest;
 	while (temp != m_source) {
 
 		if (!workingThread->TestDestroy()) {
 
 			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, -1, wxColour(51, 255, 51));
 			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
-			temp = (*ancestor)[temp];
+
+			if (finalPath[temp].parent == -1)
+				return;
+
+			else
+				temp = finalPath[temp].parent;
 
 			wxMilliSleep(100);
 		}
@@ -122,47 +126,21 @@ void DijkstraSP::showPathToSource(const int& t_vertexFrom, AlgorithmThread* work
 
 	}
 }
+void DijkstraSP::showPathToSource(const int& t_vertexFrom, AlgorithmThread* workingThread)
+{
+
+}
 
 void DijkstraSP::addNeighbours(const int& i, const int& j)
 {
-	const unsigned int MAP_ROWS = (*costList).size();
-	const unsigned int MAP_COLS = (*costList)[0].size();
-	for (int x = -1; x <= 1; x++)
-		for (int y = -1; y <= 1; y++) {
-			if (!(x == 0 && y == 0) && isSafe(i + x, j + y)) {
-				int currentCellNum = i * MAP_COLS + j;
-				int neighCellNum = (i + x) * MAP_COLS + (j + y);
-				int neighCellCost = (*costList)[i + x][j + y];
 
-				if (!mapButtonBlocked[currentCellNum] && !mapButtonBlocked[neighCellNum])
-					(*adjList)[currentCellNum].push_back(make_pair(neighCellNum, neighCellCost));
-
-			}
-		}
 }
 
 bool DijkstraSP::isSafe(const int& i, const int& j)
 {
-	return ((i >= 0 && j >= 0) && (i < m_MAP_ROWS&& j < m_MAP_COLS));
+	return ((i >= 0 && j >= 0) && (i < m_MAP_ROWS&& j < m_MAP_COLS) && !mapButtonBlocked[i * m_MAP_COLS + j]);
 }
 
-const int DijkstraSP::getShortestDistance(const int FIRST_DIM_EQ) {
-	return (*shortestDistance)[FIRST_DIM_EQ];
-}
-
-/*
-void DijkstraSP::setCostList(vector<vector<int>>& costList) {
-	this->costList = costList;
-}
-
-void DijkstraSP::incrementCellCost(const int i, const int j) {
-	costList[i][j] ++;
-}
-
-int DijkstraSP::checkCellCost(const int i, const int j) {
-	return costList[i][j];
-}
-*/
 
 void DijkstraSP::applyAdjList() {
 	for (int i = 0; i < (*costList).size(); i++) {

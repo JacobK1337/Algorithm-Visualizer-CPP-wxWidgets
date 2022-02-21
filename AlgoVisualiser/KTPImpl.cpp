@@ -51,7 +51,7 @@ bool KTPImpl::findSolution(const int& x, const int& y, const int& numOfVisited, 
 
 		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, numOfVisited, wxColour(204, 204, 0));
 		evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
-		wxMilliSleep(50);
+		//wxMilliSleep(50);
 
 	}
 
@@ -73,8 +73,6 @@ bool KTPImpl::findSolution(const int& x, const int& y, const int& numOfVisited, 
 			const int n_FIRST_DIM_EQ = newX * m_MAP_COLS + newY;
 			solution[newX][newY] = numOfVisited;
 
-
-
 			if (KTPImpl::findSolution(newX, newY, numOfVisited + 1, solution, xShift, yShift))
 				return true;
 
@@ -84,7 +82,7 @@ bool KTPImpl::findSolution(const int& x, const int& y, const int& numOfVisited, 
 				THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(n_FIRST_DIM_EQ, -1, wxColour(255, 255, 255));
 				evt_thread::sendThreadData(wxEVT_MAP_UNCHECK_REQUEST, evt_id::MAP_UNCHECK_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 
-				wxMilliSleep(50);
+				//wxMilliSleep(50);
 			}
 		}
 	}

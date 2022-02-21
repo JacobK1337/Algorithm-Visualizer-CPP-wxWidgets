@@ -10,7 +10,18 @@ class AlgorithmFrame : public wxFrame
 {
 protected:
 
-	const enum MAP_STATE { IDLE, CHOOSING_SOURCE, RUNNING, FINISHED };
+	struct MapConfig {
+		int MAP_ROWS;
+		int MAP_COLS;
+		std::string MAP_TITLE;
+		MapConfig(){}
+		MapConfig(int t_MAP_ROWS, int t_MAP_COLS, std::string t_MAP_TITLE) : 
+			MAP_ROWS(t_MAP_ROWS), 
+			MAP_COLS(t_MAP_COLS), 
+			MAP_TITLE(t_MAP_TITLE) {}
+	};
+
+	const enum MAP_STATE { IDLE, CHOOSING_SOURCE, CHOOSING_DEST, RUNNING, FINISHED };
 	virtual void setupMap() = 0;
 	virtual void setupAlgorithmList() = 0;
 	virtual void setupToolbar() = 0;

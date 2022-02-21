@@ -5,18 +5,20 @@ EVT_COMMAND(evt_id::THREAD_END_ID, wxEVT_THREAD_END, cBacktrackWindow::onThreadE
 wxEND_EVENT_TABLE()
 
 cBacktrackWindow::cBacktrackWindow() : AlgorithmFrame(wxString("Backtracking algorithms"), wxPoint(10, 10), wxSize(1600, 1000)) {
-	this->SetBackgroundColour(wxColour(0, 0, 0));
-	setupToolbar();
 
+	cBacktrackWindow::applyMapConfig();
+	cBacktrackWindow::setupToolbar();
 	Connect(evt_id::MAP_UPDATE_REQUEST_ID, wxEVT_MAP_UPDATE_REQUEST, wxThreadEventHandler(cBacktrackWindow::cellVisitedUpdate));
 	Connect(evt_id::MAP_UNCHECK_REQUEST_ID, wxEVT_MAP_UNCHECK_REQUEST, wxThreadEventHandler(cBacktrackWindow::cellUncheckUpdate));
 
-	frameContent = new wxPanel(this, wxID_ANY, wxDefaultPosition);
-	frameContent->SetBackgroundColour(wxColour(0, 0, 0));
+}
 
-	mapButtons = new wxButton * [MAP_ROWS * MAP_COLS];
+void cBacktrackWindow::applyMapConfig() {
+	MapConfig KNIGHT_CONFIG = { 5, 5, "Knight's tour problem" };
+	MapConfig SUDOKU_CONFIG = { 9, 9, "Sudoku Solver" };
 
-	setupMap();
+	mapConfig.insert(std::make_pair(KNIGHT, KNIGHT_CONFIG));
+	mapConfig.insert(std::make_pair(SUDOKU, SUDOKU_CONFIG));
 }
 
 cBacktrackWindow::~cBacktrackWindow() {
@@ -25,7 +27,7 @@ cBacktrackWindow::~cBacktrackWindow() {
 
 void cBacktrackWindow::setupKnightProblem()
 {
-	ktpImpl = std::make_unique<KTPImpl>(MAP_ROWS, MAP_COLS, (AlgorithmFrame*)this);
+	ktpImpl = std::make_unique<KTPImpl>(mapConfig[KNIGHT].MAP_ROWS, mapConfig[KNIGHT].MAP_COLS, (AlgorithmFrame*)this);
 
 	ktpImpl->generateValues(algorithmThread);
 
@@ -36,6 +38,8 @@ void cBacktrackWindow::setupKnightProblem()
 void cBacktrackWindow::runKnightProblem()
 {
 	if (mapSource != -1) {
+		cBacktrackWindow::setMapState(currentMapState = RUNNING);
+		cBacktrackWindow::disableMapButtons();
 		cBacktrackWindow::assignAlgorithmThread([this]() -> void {this->ktpImpl->runAlgorithm(algorithmThread); });
 	}
 }
@@ -46,12 +50,10 @@ void cBacktrackWindow::knightMapClick(wxButton* button)
 
 	switch (currentMapState) {
 	case CHOOSING_SOURCE: {
-
 		cBacktrackWindow::replaceSource(FIRST_DIM_EQ, "");
 		ktpImpl->setSource(FIRST_DIM_EQ);
 		cBacktrackWindow::setMapState(currentMapState = IDLE);
 		break;
-
 	}
 
 	default:
@@ -61,8 +63,7 @@ void cBacktrackWindow::knightMapClick(wxButton* button)
 
 void cBacktrackWindow::setupSudokuSolver()
 {
-	this->sudokuSolver = std::make_unique<SudokuSolver>(9, 9, (AlgorithmFrame*)this);
-
+	sudokuSolver = std::make_unique<SudokuSolver>(mapConfig[SUDOKU].MAP_ROWS, mapConfig[SUDOKU].MAP_COLS, (AlgorithmFrame*)this);
 	sudokuSolver->generateValues(algorithmThread);
 
 	cBacktrackWindow::enableMapButtons();
@@ -71,6 +72,8 @@ void cBacktrackWindow::setupSudokuSolver()
 
 void cBacktrackWindow::runSudokuSolver()
 {
+	cBacktrackWindow::setMapState(currentMapState = RUNNING);
+	cBacktrackWindow::disableMapButtons();
 	cBacktrackWindow::assignAlgorithmThread([this]() -> void {this->sudokuSolver->runAlgorithm(algorithmThread); });
 }
 
@@ -81,13 +84,25 @@ void cBacktrackWindow::sudokuSolverMapClick(wxButton* button)
 
 void cBacktrackWindow::setupMap()
 {
-	wxGridSizer* mapSizer = new wxGridSizer(MAP_ROWS, MAP_COLS, 0, 0);
+	if (frameContent != nullptr) {
+		frameContent->Destroy();
+		delete mapButtons;
+	}
+
+	frameContent = new wxPanel(this, wxID_ANY, wxDefaultPosition);
+	frameContent->SetBackgroundColour(wxColour(255, 255, 255));
+
+	int t_MAP_ROWS = mapConfig[currentMapType].MAP_ROWS;
+	int t_MAP_COLS = mapConfig[currentMapType].MAP_COLS;
+
+	mapButtons = new wxButton * [t_MAP_ROWS * t_MAP_COLS];
+	wxGridSizer* mapSizer = new wxGridSizer(t_MAP_ROWS, t_MAP_COLS, 0, 0);
 	wxFont mapFont(15, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
 
-	for (int i = 0; i < MAP_ROWS; i++)
-		for (int j = 0; j < MAP_COLS; j++) {
+	for (int i = 0; i < t_MAP_ROWS; i++)
+		for (int j = 0; j < t_MAP_COLS; j++) {
 
-			const int FIRST_DIM_EQ = i * MAP_COLS + j;
+			const int FIRST_DIM_EQ = i * t_MAP_COLS + j;
 			mapButtons[FIRST_DIM_EQ] = new wxButton(frameContent, 20000 + FIRST_DIM_EQ);
 			mapButtons[FIRST_DIM_EQ]->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &cBacktrackWindow::mapButtonClicked, this);
 			mapButtons[FIRST_DIM_EQ]->Bind(wxEVT_RIGHT_DOWN, &cBacktrackWindow::rightButtonClicked, this);
@@ -96,6 +111,9 @@ void cBacktrackWindow::setupMap()
 		}
 
 	frameContent->SetSizer(mapSizer);
+	
+	this->InvalidateBestSize();
+	this->Layout();
 }
 
 void cBacktrackWindow::setupAlgorithmList()
@@ -109,7 +127,7 @@ void cBacktrackWindow::setupToolbar()
 	algorithmChoice->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &cBacktrackWindow::choiceSelected, this);
 
 	for (auto& mapType : mapTypeMapping) {
-		algorithmChoice->Append(mapTypeDesc[mapType]);
+		algorithmChoice->Append(mapConfig[mapType].MAP_TITLE);
 	}
 
 	startButton = new wxButton(algorithmTools, wxID_ANY, "Start", wxDefaultPosition, wxSize(400, 100));
@@ -146,8 +164,6 @@ void cBacktrackWindow::onStart(wxCommandEvent& evt)
 void cBacktrackWindow::runAlgorithm()
 {
 	mapTypeStart[currentMapType]();
-	cBacktrackWindow::setMapState(currentMapState = RUNNING);
-	cBacktrackWindow::disableMapButtons();
 }
 
 void cBacktrackWindow::stopAlgorithm()
@@ -163,7 +179,6 @@ void cBacktrackWindow::stopAlgorithm()
 
 void cBacktrackWindow::resetMap()
 {
-
 	mapSource = -1;
 	mapSourceValue = "";
 	cBacktrackWindow::setMapState(currentMapState = IDLE);
@@ -199,9 +214,9 @@ void cBacktrackWindow::setMapState(MAP_STATE t_mapState)
 
 void cBacktrackWindow::disableMapButtons()
 {
-	for (int i = 0; i < MAP_ROWS; i++)
-		for (int j = 0; j < MAP_COLS; j++) {
-			const int FIRST_DIM_EQ = i * MAP_COLS + j;
+	for (int i = 0; i < mapConfig[currentMapType].MAP_ROWS; i++)
+		for (int j = 0; j < mapConfig[currentMapType].MAP_COLS; j++) {
+			const int FIRST_DIM_EQ = i * mapConfig[currentMapType].MAP_COLS + j;
 			mapButtons[FIRST_DIM_EQ]->Disable();
 		}
 
@@ -211,9 +226,9 @@ void cBacktrackWindow::disableMapButtons()
 
 void cBacktrackWindow::enableMapButtons()
 {
-	for (int i = 0; i < MAP_ROWS; i++)
-		for (int j = 0; j < MAP_COLS; j++) {
-			const int FIRST_DIM_EQ = i * MAP_COLS + j;
+	for (int i = 0; i < mapConfig[currentMapType].MAP_ROWS; i++)
+		for (int j = 0; j < mapConfig[currentMapType].MAP_COLS; j++) {
+			const int FIRST_DIM_EQ = i * mapConfig[currentMapType].MAP_COLS + j;
 			mapButtons[FIRST_DIM_EQ]->Enable();
 		}
 
@@ -275,6 +290,7 @@ void cBacktrackWindow::choiceSelected(wxCommandEvent& evt)
 
 	currentMapType = selectedMapType;
 
+	setupMap();
 	mapTypeSetup[currentMapType]();
 }
 
@@ -336,3 +352,4 @@ void cBacktrackWindow::updateCellValue(const int& FIRST_DIM_EQ, wxString const& 
 {
 	mapButtons[FIRST_DIM_EQ]->SetLabelText(t_newValue);
 }
+

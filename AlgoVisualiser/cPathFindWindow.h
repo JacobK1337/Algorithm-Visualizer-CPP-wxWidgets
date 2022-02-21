@@ -4,6 +4,7 @@
 #include"DijkstraSP.h"
 #include"DFSimpl.h"
 #include"BFSimpl.h"
+#include"AStar.h"
 #include<string>
 #include<map>
 
@@ -11,11 +12,11 @@ class cPathFindWindow : AlgorithmFrame
 {
 private:
 
-	const int MAP_ROWS = 15;
-	const int MAP_COLS = 15;
 	int mapSource = -1;
+	int mapDest = -1;
 	std::string mapSourceValue = "";
-	const enum MAP_TYPE{DIJKSTRA, DFS, BFS};
+	std::string mapDestValue = "";
+	const enum MAP_TYPE{DIJKSTRA, DFS, BFS, ASTAR};
 
 	MAP_TYPE currentMapType;
 	MAP_STATE currentMapState = IDLE;
@@ -24,6 +25,7 @@ private:
 	std::unique_ptr<DijkstraSP> dijkstraImpl;
 	std::unique_ptr<DFSimpl> dfsImpl;
 	std::unique_ptr<BFSimpl> bfsImpl;
+	std::unique_ptr<AStar> aStarImpl;
 
 	//wxWidgets elements
 	wxPanel* frameContent = nullptr;
@@ -34,14 +36,17 @@ private:
 	wxChoice* algorithmChoice = nullptr;
 	wxButton* startButton = nullptr;
 	wxButton* sourceButton = nullptr;
+	wxButton* destButton = nullptr;
 
 	//side thread to proccess algorithms
 	AlgorithmThread* algorithmThread = nullptr;
 
 	//algorithm setup/description/start/onclick maps
 	std::vector<MAP_TYPE> mapTypeMapping = {
-		DIJKSTRA, DFS, BFS
+		DIJKSTRA, DFS, BFS, ASTAR
 	};
+
+	std::map<MAP_TYPE, MapConfig> mapConfig;
 
 	std::map<MAP_TYPE, std::string> mapTypeDesc = {
 		{DIJKSTRA, "Dijkstra Shortest Path"},
@@ -52,21 +57,25 @@ private:
 	std::map < MAP_TYPE, std::function<void()> > mapTypeSetup = {
 		{DIJKSTRA, [this]() -> void {this->setupDijkstraSp(); }},
 		{DFS, [this]() -> void {this->setupDfs(); }},
-		{BFS, [this]() -> void {this->setupBfs(); }}
+		{BFS, [this]() -> void {this->setupBfs(); }},
+		{ASTAR, [this]() -> void {this->setupAstar(); }}
 	};
 
 	std::map < MAP_TYPE, std::function<void()> > mapTypeStart = {
 		{DIJKSTRA, [this]() -> void {this->runDijkstra(); }},
 		{DFS, [this]() -> void {this->runDfs(); }},
-		{BFS, [this]() -> void {this->runBfs(); }}
+		{BFS, [this]() -> void {this->runBfs(); }},
+		{ASTAR, [this]() -> void {this->runAstar(); }}
 	};
-
+	/*
 	std::map< MAP_TYPE, std::function<void(wxButton*)> > mapTypeOnClick = {
 		{DIJKSTRA, [this](wxButton* button) -> void {this->dijkstraButtonClickAction(button); }},
 		{DFS, [this](wxButton* button) -> void {this->dfsButtonClickAction(button); }},
-		{BFS, [this](wxButton* button) -> void {this->bfsButtonClickAction(button); }}
+		{BFS, [this](wxButton* button) -> void {this->bfsButtonClickAction(button); }},
+		{ASTAR, [this](wxButton* button) -> void {this->aStarButtonClickAction(button); }}
 	};
 	
+	*/
 
 private:
 	// Odziedziczono za poœrednictwem elementu AlgorithmFrame
@@ -83,6 +92,7 @@ private:
 	virtual void enableToolbarButtons() override;
 	virtual void disableToolbarButtons() override;
 	virtual void replaceSource(const int t_newSource, const std::string t_newSourceValue) override;
+	void replaceDest(const int t_newDest, const std::string t_newDestValue);
 	virtual void assignAlgorithmThread(const std::function<void()>& runFunction) override;
 	virtual void onThreadEnd(wxCommandEvent& evt) override;
 	virtual void onThreadBreak(wxCommandEvent& evt) override;
@@ -90,6 +100,7 @@ private:
 	virtual void mapButtonClicked(wxCommandEvent& evt) override;
 	virtual void rightButtonClicked(wxMouseEvent& evt) override;
 	virtual void sourceSetButtonClicked(wxCommandEvent& evt) override;
+	void destSetButtonClicked(wxCommandEvent& evt);
 	virtual void cellVisitedUpdate(wxThreadEvent& evt) override;
 	virtual void updateCellColor(const int& FIRST_DIM_EQ, wxColour const& t_newColour) override;
 	virtual void updateCellValue(const int& FIRST_DIM_EQ, wxString const& t_newValue) override;
@@ -98,17 +109,23 @@ private:
 	void setupDijkstraSp();
 	void setupDfs();
 	void setupBfs();
+	void setupAstar();
 
 	void runDijkstra();
 	void runDfs();
 	void runBfs();
-
+	void runAstar();
+	/*
 	void dijkstraButtonClickAction(wxButton* t_buttonClicked);
 	void dfsButtonClickAction(wxButton* t_buttonClicked);
 	void bfsButtonClickAction(wxButton* t_buttonClicked);
-	
+	void aStarButtonClickAction(wxButton* t_buttonClicked);
+	*/
+
 	void buttonClickAction(wxButton* t_buttonClicked);
 
+
+	void applyMapConfig();
 public:
 	cPathFindWindow();
 	~cPathFindWindow();

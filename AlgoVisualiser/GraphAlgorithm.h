@@ -10,6 +10,7 @@ public:
 
 protected:
 	int m_source = -1;
+	int m_dest = -1;
 	virtual void addNeighbours(const int& i, const int& j) = 0;
 	virtual void applyAdjList() = 0;
 	virtual bool isSafe(const int& i, const int& j) = 0;

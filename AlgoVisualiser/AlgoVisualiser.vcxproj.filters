@@ -102,6 +102,9 @@
     <ClInclude Include="GraphAlgorithm.h">
       <Filter>Pliki nagłówkowe\interfaces</Filter>
     </ClInclude>
+    <ClInclude Include="AStar.h">
+      <Filter>Pliki nagłówkowe\graph_algorithms</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AlgorithmThread.cpp">
@@ -142,6 +145,9 @@
     </ClCompile>
     <ClCompile Include="GraphAlgorithm.cpp">
       <Filter>Pliki źródłowe\interfaces</Filter>
+    </ClCompile>
+    <ClCompile Include="AStar.cpp">
+      <Filter>Pliki źródłowe\graph_algorithms</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

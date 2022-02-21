@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="Algorithm.h" />
     <ClInclude Include="AlgorithmFrame.h" />
+    <ClInclude Include="AStar.h" />
     <ClInclude Include="BFSimpl.h" />
     <ClInclude Include="cApp.h" />
     <ClInclude Include="cBacktrackWindow.h" />
@@ -39,6 +40,7 @@
   <ItemGroup>
     <ClCompile Include="Algorithm.cpp" />
     <ClCompile Include="AlgorithmFrame.cpp" />
+    <ClCompile Include="AStar.cpp" />
     <ClCompile Include="BFSimpl.cpp" />
     <ClCompile Include="cApp.cpp" />
     <ClCompile Include="cBacktrackWindow.cpp" />

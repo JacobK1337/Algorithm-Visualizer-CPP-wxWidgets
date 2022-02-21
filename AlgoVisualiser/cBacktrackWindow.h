@@ -16,8 +16,6 @@ public:
 	wxDECLARE_EVENT_TABLE();
 
 private:
-	const int MAP_ROWS = 9;
-	const int MAP_COLS = 9;
 	int mapSource = -1;
 	std::string mapSourceValue = "";
 
@@ -43,8 +41,10 @@ private:
 		SUDOKU
 	};
 
+	std::map<MAP_TYPE, MapConfig> mapConfig;
+
 	std::map<MAP_TYPE, std::string> mapTypeDesc = {
-		{KNIGHT, "Knight's tour algorithm"},
+		{KNIGHT, "Knight's tour problem"},
 		{SUDOKU, "Sudoku solver"}
 	};
 
@@ -62,6 +62,8 @@ private:
 		{KNIGHT, [this](wxButton* button) -> void {this->knightMapClick(button); }},
 		{SUDOKU, [this](wxButton* button) -> void {this->sudokuSolverMapClick(button); }}
 	};
+
+	
 
 	//backtrack algorithms
 	//knight problem setups
@@ -102,5 +104,5 @@ private:
 	//
 
 	void cellUncheckUpdate(wxThreadEvent& evt);
+	void applyMapConfig();
 };
-
