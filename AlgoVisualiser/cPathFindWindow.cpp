@@ -11,7 +11,7 @@ cPathFindWindow::cPathFindWindow() : AlgorithmFrame(wxString("Pathfinding algori
 	cPathFindWindow::applyMapConfig();
 	cPathFindWindow::setupToolbar();
 	Connect(evt_id::MAP_UPDATE_REQUEST_ID, wxEVT_MAP_UPDATE_REQUEST, wxThreadEventHandler(cPathFindWindow::cellVisitedUpdate));
-	
+
 }
 
 
@@ -46,7 +46,7 @@ void cPathFindWindow::setupMap() {
 
 	mapButtons = new wxButton * [t_MAP_ROWS * t_MAP_COLS];
 	wxGridSizer* mapSizer = new wxGridSizer(t_MAP_ROWS, t_MAP_COLS, 0, 0);
-	wxFont mapFont(15, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
+	wxFont mapFont(wxDefaultSize, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
 
 	for (int i = 0; i < t_MAP_ROWS; i++)
 		for (int j = 0; j < t_MAP_COLS; j++) {
@@ -117,7 +117,7 @@ void cPathFindWindow::setupDijkstraSp() {
 
 	dijkstraImpl = make_unique<DijkstraSP>(mapConfig[DIJKSTRA].MAP_ROWS, mapConfig[DIJKSTRA].MAP_COLS, (AlgorithmFrame*)this);
 	dijkstraImpl->generateValues(algorithmThread);
-	
+
 	cPathFindWindow::enableMapButtons();
 	cPathFindWindow::enableToolbarButtons();
 }
@@ -335,16 +335,11 @@ void cPathFindWindow::cellVisitedUpdate(wxThreadEvent& evt) {
 	def_type::CELL_UPDATE_INFO NEW_DATA = evt.GetPayload<def_type::CELL_UPDATE_INFO>();
 
 	int FIRST_DIM_EQ = NEW_DATA.FIRST_DIM_EQ;
-	int newValue = NEW_DATA.newValue;
+	std::string newValue = NEW_DATA.newValue;
 	wxColour newColour = NEW_DATA.newColour;
 
 	cPathFindWindow::updateCellColor(FIRST_DIM_EQ, newColour);
-
-	if (newValue == -1)
-		cPathFindWindow::updateCellValue(FIRST_DIM_EQ, wxString(""));
-
-	else
-		cPathFindWindow::updateCellValue(FIRST_DIM_EQ, wxString(to_string(newValue)));
+	cPathFindWindow::updateCellValue(FIRST_DIM_EQ, wxString(newValue));
 
 }
 
@@ -403,7 +398,7 @@ void cPathFindWindow::replaceDest(const int t_newDest, const std::string t_newDe
 	}
 
 	mapButtons[t_newDest]->SetBackgroundColour(def_col::SOURCE_COLOUR);
-	mapButtons[t_newDest]->SetLabelText("Destination");
+	mapButtons[t_newDest]->SetLabelText("Dest");
 
 	mapDest = t_newDest;
 	mapDestValue = t_newDestValue;

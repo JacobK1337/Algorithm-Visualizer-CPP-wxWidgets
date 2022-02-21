@@ -6,7 +6,7 @@
 #include<vector>
 #include"KTPImpl.h"
 #include"SudokuSolver.h"
-
+#include"RIMimpl.h"
 class cBacktrackWindow : AlgorithmFrame
 {
 
@@ -19,7 +19,7 @@ private:
 	int mapSource = -1;
 	std::string mapSourceValue = "";
 
-	const enum MAP_TYPE {KNIGHT, SUDOKU};
+	const enum MAP_TYPE {KNIGHT, SUDOKU, RAT};
 	MAP_TYPE currentMapType;
 	MAP_STATE currentMapState = IDLE;
 
@@ -35,27 +35,33 @@ private:
 
 	std::unique_ptr<KTPImpl> ktpImpl;
 	std::unique_ptr<SudokuSolver> sudokuSolver;
+	std::unique_ptr<RIMimpl> rimImpl;
 
 	std::vector<MAP_TYPE> mapTypeMapping = {
 		KNIGHT,
-		SUDOKU
+		SUDOKU,
+		RAT
 	};
 
 	std::map<MAP_TYPE, MapConfig> mapConfig;
 
+	/*
 	std::map<MAP_TYPE, std::string> mapTypeDesc = {
 		{KNIGHT, "Knight's tour problem"},
 		{SUDOKU, "Sudoku solver"}
 	};
+	*/
 
 	std::map < MAP_TYPE, std::function<void()> > mapTypeSetup = {
 		{KNIGHT, [this]() -> void {this->setupKnightProblem(); }},
-		{SUDOKU, [this]() -> void {this->setupSudokuSolver(); }}
+		{SUDOKU, [this]() -> void {this->setupSudokuSolver(); }},
+		{RAT, [this]() -> void {this->setupRim(); }}
 	};
 
 	std::map < MAP_TYPE, std::function<void()> > mapTypeStart = {
 		{KNIGHT, [this]() -> void {this->runKnightProblem(); }},
-		{SUDOKU, [this]() -> void {this->runSudokuSolver(); }}
+		{SUDOKU, [this]() -> void {this->runSudokuSolver(); }},
+		{RAT, [this]() -> void {this->runRim(); }}
 	};
 
 	std::map< MAP_TYPE, std::function<void(wxButton*)> > mapTypeOnClick = {
@@ -75,6 +81,10 @@ private:
 	void setupSudokuSolver();
 	void runSudokuSolver();
 	void sudokuSolverMapClick(wxButton* button);
+
+	//rat in maze setups
+	void setupRim();
+	void runRim();
 
 
 	// Odziedziczono za poœrednictwem elementu AlgorithmFrame

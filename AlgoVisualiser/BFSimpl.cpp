@@ -14,10 +14,6 @@ void BFSimpl::setSource(const int& src) {
 	m_source = src;
 }
 
-int BFSimpl::getSource() {
-	return m_source;
-}
-
 void BFSimpl::setDest(const int& t_newDest) {
 	m_dest = t_newDest;
 }
@@ -29,7 +25,7 @@ void BFSimpl::generateValues(AlgorithmThread* workingThread)
 		for (int j = 0; j < m_MAP_COLS; j++)
 		{
 			const int FIRST_DIM_EQ = i * m_MAP_COLS + j;
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, -1, wxColour(255, 255, 255));
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, "", wxColour(255, 255, 255));
 			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 
 		}
@@ -68,7 +64,7 @@ void BFSimpl::bfs(std::vector<cellInfo>& finalPath, std::vector<bool>& visited, 
 
 		//checking if thread was destroyed in parent
 		if (!workingThread->TestDestroy()) {
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(curr, finalPath[curr].when, wxColour(204, 204, 0));
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(curr, std::to_string(finalPath[curr].when), wxColour(204, 204, 0));
 			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 			wxMilliSleep(100);
 		}
@@ -97,14 +93,6 @@ void BFSimpl::bfs(std::vector<cellInfo>& finalPath, std::vector<bool>& visited, 
 	}
 }
 
-void BFSimpl::applyAdjList() {
-	for (int i = 0; i < m_MAP_ROWS; i++)
-		for (int j = 0; j < m_MAP_COLS; j++) {
-			BFSimpl::addNeighbours(i, j);
-		}
-
-}
-
 void BFSimpl::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread* workingThread) {
 
 	int temp = m_dest;
@@ -112,7 +100,7 @@ void BFSimpl::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread
 	while (temp != m_source) {
 
 		if (!workingThread->TestDestroy()) {
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, -1, wxColour(51, 255, 51));
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, "", wxColour(51, 255, 51));
 			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 			if (finalPath[temp].parent == -1)
 				return;
@@ -130,11 +118,6 @@ void BFSimpl::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread
 
 	}
 }
-void BFSimpl::showPathToSource(const int& t_vertexFrom, AlgorithmThread* workingThread) {
-
-
-}
-
 
 bool BFSimpl::isSafe(const int& i, const int& j) {
 
@@ -142,7 +125,3 @@ bool BFSimpl::isSafe(const int& i, const int& j) {
 
 }
 
-void BFSimpl::addNeighbours(const int& i, const int& j)
-{
-	
-}

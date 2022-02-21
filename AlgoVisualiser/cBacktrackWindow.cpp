@@ -16,9 +16,11 @@ cBacktrackWindow::cBacktrackWindow() : AlgorithmFrame(wxString("Backtracking alg
 void cBacktrackWindow::applyMapConfig() {
 	MapConfig KNIGHT_CONFIG = { 5, 5, "Knight's tour problem" };
 	MapConfig SUDOKU_CONFIG = { 9, 9, "Sudoku Solver" };
+	MapConfig RAT_CONFIG = { 7, 7, "Rat in a maze problem" };
 
 	mapConfig.insert(std::make_pair(KNIGHT, KNIGHT_CONFIG));
 	mapConfig.insert(std::make_pair(SUDOKU, SUDOKU_CONFIG));
+	mapConfig.insert(std::make_pair(RAT, RAT_CONFIG));
 }
 
 cBacktrackWindow::~cBacktrackWindow() {
@@ -76,10 +78,24 @@ void cBacktrackWindow::runSudokuSolver()
 	cBacktrackWindow::disableMapButtons();
 	cBacktrackWindow::assignAlgorithmThread([this]() -> void {this->sudokuSolver->runAlgorithm(algorithmThread); });
 }
-
 void cBacktrackWindow::sudokuSolverMapClick(wxButton* button)
 {
 
+}
+
+
+void cBacktrackWindow::setupRim() {
+	rimImpl = std::make_unique<RIMimpl>(mapConfig[RAT].MAP_ROWS, mapConfig[RAT].MAP_COLS, (AlgorithmFrame*)this);
+	rimImpl->generateValues(algorithmThread);
+
+	cBacktrackWindow::enableMapButtons();
+	cBacktrackWindow::enableToolbarButtons();
+}
+
+void cBacktrackWindow::runRim() {
+	cBacktrackWindow::setMapState(currentMapState = RUNNING);
+	cBacktrackWindow::disableMapButtons();
+	cBacktrackWindow::assignAlgorithmThread([this]() -> void {this->rimImpl->runAlgorithm(algorithmThread); });
 }
 
 void cBacktrackWindow::setupMap()
@@ -111,7 +127,7 @@ void cBacktrackWindow::setupMap()
 		}
 
 	frameContent->SetSizer(mapSizer);
-	
+
 	this->InvalidateBestSize();
 	this->Layout();
 }
@@ -318,16 +334,11 @@ void cBacktrackWindow::cellVisitedUpdate(wxThreadEvent& evt)
 	def_type::CELL_UPDATE_INFO NEW_DATA = evt.GetPayload<def_type::CELL_UPDATE_INFO>();
 
 	int FIRST_DIM_EQ = NEW_DATA.FIRST_DIM_EQ;
-	int newValue = NEW_DATA.newValue;
+	std::string newValue = NEW_DATA.newValue;
 	wxColour newColour = NEW_DATA.newColour;
 
 	cBacktrackWindow::updateCellColor(FIRST_DIM_EQ, newColour);
-	if (newValue == -1)
-		cBacktrackWindow::updateCellValue(FIRST_DIM_EQ, wxString(""));
-
-	else
-		cBacktrackWindow::updateCellValue(FIRST_DIM_EQ, wxString(std::to_string(newValue)));
-
+	cBacktrackWindow::updateCellValue(FIRST_DIM_EQ, wxString(newValue));
 
 }
 void cBacktrackWindow::cellUncheckUpdate(wxThreadEvent& evt) {
@@ -335,7 +346,7 @@ void cBacktrackWindow::cellUncheckUpdate(wxThreadEvent& evt) {
 	def_type::CELL_UPDATE_INFO NEW_DATA = evt.GetPayload<def_type::CELL_UPDATE_INFO>();
 
 	int FIRST_DIM_EQ = NEW_DATA.FIRST_DIM_EQ;
-	int newValue = NEW_DATA.newValue;
+	std::string newValue = NEW_DATA.newValue;
 	wxColour newColour = NEW_DATA.newColour;
 
 	cBacktrackWindow::updateCellColor(FIRST_DIM_EQ, newColour);

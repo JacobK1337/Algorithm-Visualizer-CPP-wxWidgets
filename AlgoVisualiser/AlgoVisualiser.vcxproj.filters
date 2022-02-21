@@ -105,6 +105,9 @@
     <ClInclude Include="AStar.h">
       <Filter>Pliki nagłówkowe\graph_algorithms</Filter>
     </ClInclude>
+    <ClInclude Include="RIMimpl.h">
+      <Filter>Pliki nagłówkowe\backtrack_algorithms</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AlgorithmThread.cpp">
@@ -148,6 +151,9 @@
     </ClCompile>
     <ClCompile Include="AStar.cpp">
       <Filter>Pliki źródłowe\graph_algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="RIMimpl.cpp">
+      <Filter>Pliki źródłowe\backtrack_algorithms</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

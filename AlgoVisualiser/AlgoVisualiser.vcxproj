@@ -35,6 +35,7 @@
     <ClInclude Include="GraphAlgorithm.h" />
     <ClInclude Include="KTPImpl.h" />
     <ClInclude Include="AlgorithmThread.h" />
+    <ClInclude Include="RIMimpl.h" />
     <ClInclude Include="SudokuSolver.h" />
   </ItemGroup>
   <ItemGroup>
@@ -51,6 +52,7 @@
     <ClCompile Include="GraphAlgorithm.cpp" />
     <ClCompile Include="KTPImpl.cpp" />
     <ClCompile Include="AlgorithmThread.cpp" />
+    <ClCompile Include="RIMimpl.cpp" />
     <ClCompile Include="SudokuSolver.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

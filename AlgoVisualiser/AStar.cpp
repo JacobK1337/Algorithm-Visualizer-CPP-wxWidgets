@@ -15,7 +15,7 @@ void AStar::generateValues(AlgorithmThread* workingThread)
 		for (int j = 0; j < m_MAP_COLS; j++)
 		{
 			const int FIRST_DIM_EQ = i * m_MAP_COLS + j;
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, -1, wxColour(255, 255, 255));
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, "", wxColour(255, 255, 255));
 			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 
 		}
@@ -60,7 +60,13 @@ void AStar::aStarSearch(AlgorithmThread* workingThread) {
 		int cellNum = std::get<1>(currentCellInfo);
 		cellProccessed[m_source] = true;
 
-		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(cellNum, cellDistance, wxColour(204, 204, 0));
+		//only two decimal places in the result;
+		std::stringstream stream;
+		stream << std::fixed << std::setprecision(2) << cellDistance;
+		std::string truncCellDistance = stream.str();
+		//
+
+		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(cellNum, truncCellDistance, wxColour(204, 204, 0));
 		evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 		wxMilliSleep(100);
 
@@ -116,7 +122,7 @@ void AStar::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread* 
 
 		if (!workingThread->TestDestroy()) {
 
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, -1, wxColour(51, 255, 51));
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, "", wxColour(51, 255, 51));
 			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 			temp = finalPath[temp].parent;
 			wxMilliSleep(100);
@@ -131,36 +137,6 @@ void AStar::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread* 
 
 	}
 }
-
-void AStar::showPathToSource(const int& t_vertexFrom, AlgorithmThread* workingThread) {
-
-}
-
-void AStar::addNeighbours(const int& i, const int& j)
-{
-	for (int x = -1; x <= 1; x++)
-		for (int y = -1; y <= 1; y++) {
-			if (!(x == 0 && y == 0) && isSafe(i + x, j + y)) {
-				int currentCellNum = i * m_MAP_COLS + j;
-				int neighCellNum = (i + x) * m_MAP_COLS + (j + y);
-
-				if (!mapCellBlocked[currentCellNum] && !mapCellBlocked[neighCellNum]);
-					//(*adjList)[currentCellNum].push_back(neighCellNum);
-
-
-			}
-		}
-}
-
-void AStar::applyAdjList()
-{
-	for (int i = 0; i < m_MAP_ROWS; i++)
-		for (int j = 0; j < m_MAP_COLS; j++) {
-			AStar::addNeighbours(i, j);
-		}
-}
-
-
 bool AStar::isSafe(const int& FIRST_DIM_EQ)
 {
 	return FIRST_DIM_EQ >= 0 && FIRST_DIM_EQ <= m_MAP_ROWS * m_MAP_COLS - 1;//((i >= 0 && j >= 0) && (i < m_MAP_ROWS&& j < m_MAP_COLS));
@@ -174,5 +150,11 @@ bool AStar::isSafe(const int& i, const int& j)
 
 double AStar::getH(const int& v)
 {
-	return 0;
+	int cellX = v / m_MAP_COLS;
+	int cellY = v % m_MAP_COLS;
+
+	int destX = m_dest / m_MAP_COLS;
+	int destY = m_dest % m_MAP_COLS;
+
+	return sqrt(pow(cellX - destX, 2) + pow(cellY - destY, 2));
 }
