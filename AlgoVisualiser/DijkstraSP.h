@@ -7,11 +7,6 @@
 class DijkstraSP : public GraphAlgorithm
 {
 private:
-	/*
-	std::unique_ptr<def_type::vector2DPair> adjList;
-	std::unique_ptr<def_type::vector1DInt> ancestor;
-	std::unique_ptr<def_type::vector1DInt> shortestDistance;
-	*/
 	std::unique_ptr<def_type::vector2DInt> costList;
 
 	struct cellInfo {
@@ -23,20 +18,17 @@ private:
 			cost(t_cost) {}
 	};
 
-	def_type::vector1DBool mapButtonBlocked;
-	std::unique_ptr<def_type::CELL_UPDATE_INFO> THREAD_DATA;
 	void dijkstra(std::vector<cellInfo>& finalPath, AlgorithmThread* workingThread);
+	void showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread* workingThread);
 
 public:
+
 	DijkstraSP(const int& MAP_ROWS, const int& MAP_COLS, wxEvtHandler* handler);
 	~DijkstraSP();
 	void setBlockedCells(def_type::vector1DBool& blockedButtons);
-
-	// Odziedziczono za poœrednictwem elementu GraphAlgorithm
 	virtual void generateValues(AlgorithmThread* workingThread) override;
 	virtual void runAlgorithm(AlgorithmThread* workingThread) override;
 	virtual void setSource(const int& t_newSource) override;
 	virtual void setDest(const int& t_newDest) override;
-	void showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread* workingThread);
 	virtual bool isSafe(const int& i, const int& j) override;
 };

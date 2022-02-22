@@ -48,17 +48,16 @@ bool KTPImpl::findSolution(const int& x, const int& y, const int& numOfVisited, 
 	if (!m_workingThread->TestDestroy())
 	{
 
-		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, std::to_string(numOfVisited), wxColour(204, 204, 0));
+		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, std::to_string(numOfVisited), def_col::VISITED_COLOUR);
 		evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
-		//wxMilliSleep(50);
+		wxMilliSleep(50);
 
 	}
 
-	else {
-
+	else 
+	{
 		m_workingThread->flagThreadBreak(true);
 		return false;
-
 	}
 
 	if (numOfVisited == m_MAP_ROWS * m_MAP_COLS)
@@ -78,10 +77,10 @@ bool KTPImpl::findSolution(const int& x, const int& y, const int& numOfVisited, 
 			else {
 				solution[newX][newY] = -1;
 
-				THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(n_FIRST_DIM_EQ, "", wxColour(255, 255, 255));
-				evt_thread::sendThreadData(wxEVT_MAP_UNCHECK_REQUEST, evt_id::MAP_UNCHECK_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
+				THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(n_FIRST_DIM_EQ, "", def_col::IDLE_COLOUR);
+				evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 
-				//wxMilliSleep(50);
+				wxMilliSleep(50);
 			}
 		}
 	}
@@ -94,8 +93,7 @@ void KTPImpl::generateValues(AlgorithmThread* workingThread)
 	for (int i = 0; i < m_MAP_ROWS; i++)
 		for (int j = 0; j < m_MAP_COLS; j++) {
 			const int FIRST_DIM_EQ = i * m_MAP_COLS + j;
-
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, "", wxColour(255, 255, 255));
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, "", def_col::IDLE_COLOUR);
 			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 		}
 }

@@ -23,7 +23,6 @@ protected:
 
 	const enum MAP_STATE { IDLE, CHOOSING_SOURCE, CHOOSING_DEST, RUNNING, FINISHED };
 	virtual void setupMap() = 0;
-	virtual void setupAlgorithmList() = 0;
 	virtual void setupToolbar() = 0;
 
 	//setupAlgorithms
@@ -41,6 +40,7 @@ protected:
 	virtual void enableToolbarButtons() = 0;
 	virtual void disableToolbarButtons() = 0;
 	virtual void replaceSource(const int t_newSource, const std::string t_newSourceValue) = 0; 
+	virtual void replaceDest(const int t_newDest, const std::string t_newDestValue) = 0;
 
 	virtual void assignAlgorithmThread(const std::function<void()>& runFunction) = 0; 
 	virtual void onThreadEnd(wxCommandEvent& evt) = 0;
@@ -50,7 +50,7 @@ protected:
 	virtual void rightButtonClicked(wxMouseEvent& evt) = 0;
 	virtual void sourceSetButtonClicked(wxCommandEvent& evt) = 0;
 
-	virtual void cellVisitedUpdate(wxThreadEvent& evt) = 0;
+	virtual void cellUpdate(wxThreadEvent& evt) = 0;
 	virtual void updateCellColor(const int& FIRST_DIM_EQ, wxColour const& t_newColour) = 0;
 	virtual void updateCellValue(const int& FIRST_DIM_EQ, wxString const& t_newValue) = 0;
 

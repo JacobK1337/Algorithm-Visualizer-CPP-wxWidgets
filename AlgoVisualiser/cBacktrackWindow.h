@@ -19,7 +19,15 @@ private:
 	int mapSource = -1;
 	std::string mapSourceValue = "";
 
-	const enum MAP_TYPE {KNIGHT, SUDOKU, RAT};
+	const enum MAP_TYPE {
+		MAP_TYPE_START,
+
+		KNIGHT,
+		SUDOKU, 
+		RAT,
+
+		MAP_TYPE_END
+	};
 	MAP_TYPE currentMapType;
 	MAP_STATE currentMapState = IDLE;
 
@@ -37,20 +45,7 @@ private:
 	std::unique_ptr<SudokuSolver> sudokuSolver;
 	std::unique_ptr<RIMimpl> rimImpl;
 
-	std::vector<MAP_TYPE> mapTypeMapping = {
-		KNIGHT,
-		SUDOKU,
-		RAT
-	};
-
 	std::map<MAP_TYPE, MapConfig> mapConfig;
-
-	/*
-	std::map<MAP_TYPE, std::string> mapTypeDesc = {
-		{KNIGHT, "Knight's tour problem"},
-		{SUDOKU, "Sudoku solver"}
-	};
-	*/
 
 	std::map < MAP_TYPE, std::function<void()> > mapTypeSetup = {
 		{KNIGHT, [this]() -> void {this->setupKnightProblem(); }},
@@ -64,23 +59,15 @@ private:
 		{RAT, [this]() -> void {this->runRim(); }}
 	};
 
-	std::map< MAP_TYPE, std::function<void(wxButton*)> > mapTypeOnClick = {
-		{KNIGHT, [this](wxButton* button) -> void {this->knightMapClick(button); }},
-		{SUDOKU, [this](wxButton* button) -> void {this->sudokuSolverMapClick(button); }}
-	};
-
-	
 
 	//backtrack algorithms
 	//knight problem setups
 	void setupKnightProblem();
 	void runKnightProblem();
-	void knightMapClick(wxButton* button);
 
 	//sudoku solver setups
 	void setupSudokuSolver();
 	void runSudokuSolver();
-	void sudokuSolverMapClick(wxButton* button);
 
 	//rat in maze setups
 	void setupRim();
@@ -89,7 +76,6 @@ private:
 
 	// Odziedziczono za poœrednictwem elementu AlgorithmFrame
 	virtual void setupMap() override;
-	virtual void setupAlgorithmList() override;
 	virtual void setupToolbar() override;
 	virtual void onStart(wxCommandEvent& evt) override;
 	virtual void runAlgorithm() override;
@@ -101,6 +87,7 @@ private:
 	virtual void enableToolbarButtons() override;
 	virtual void disableToolbarButtons() override;
 	virtual void replaceSource(const int t_newSource, const std::string t_newSourceValue) override;
+	virtual void replaceDest(const int t_newDest, const std::string t_newDestValue) override;
 	virtual void assignAlgorithmThread(const std::function<void()>& runFunction) override;
 	virtual void onThreadEnd(wxCommandEvent& evt) override;
 	virtual void onThreadBreak(wxCommandEvent& evt) override;
@@ -108,11 +95,11 @@ private:
 	virtual void mapButtonClicked(wxCommandEvent& evt) override;
 	virtual void rightButtonClicked(wxMouseEvent& evt) override;
 	virtual void sourceSetButtonClicked(wxCommandEvent& evt) override;
-	virtual void cellVisitedUpdate(wxThreadEvent& evt) override;
+	virtual void cellUpdate(wxThreadEvent& evt) override;
 	virtual void updateCellColor(const int& FIRST_DIM_EQ, wxColour const& t_newColour) override;
 	virtual void updateCellValue(const int& FIRST_DIM_EQ, wxString const& t_newValue) override;
 	//
-
-	void cellUncheckUpdate(wxThreadEvent& evt);
 	void applyMapConfig();
+
+	void OnClose(wxCloseEvent& evt);
 };

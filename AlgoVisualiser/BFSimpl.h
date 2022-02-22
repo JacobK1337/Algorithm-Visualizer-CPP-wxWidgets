@@ -16,22 +16,18 @@ private:
 			when(t_when) {}
 	};
 
-	std::unique_ptr<def_type::CELL_UPDATE_INFO> THREAD_DATA;
-	def_type::vector1DBool mapBlockedCells;
 	void bfs(std::vector<cellInfo>& finalPath, std::vector<bool>& visited, AlgorithmThread* workingThread);
+	void showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread* workingThread);
+	virtual bool isSafe(const int& i, const int& j) override;
 
 public:
 	BFSimpl(const int& MAP_ROWS, const int& MAP_COLS, wxEvtHandler* handler);
 	~BFSimpl();
 	void setBlockedCells(def_type::vector1DBool& blockedCells);
-
-	// Odziedziczono za poœrednictwem elementu GraphAlgorithm
 	virtual void generateValues(AlgorithmThread* workingThread) override;
 	virtual void runAlgorithm(AlgorithmThread* workingThread) override;
 	virtual void setSource(const int& t_newSource) override;
 	virtual void setDest(const int& t_newDest) override;
-	void showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread* workingThread);
-	virtual bool isSafe(const int& i, const int& j) override;
 
 
 };

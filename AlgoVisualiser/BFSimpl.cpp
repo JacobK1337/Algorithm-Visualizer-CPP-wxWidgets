@@ -25,7 +25,7 @@ void BFSimpl::generateValues(AlgorithmThread* workingThread)
 		for (int j = 0; j < m_MAP_COLS; j++)
 		{
 			const int FIRST_DIM_EQ = i * m_MAP_COLS + j;
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, "", wxColour(255, 255, 255));
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, "", def_col::IDLE_COLOUR);
 			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 
 		}
@@ -42,11 +42,11 @@ void BFSimpl::runAlgorithm(AlgorithmThread* workingThread)
 
 
 void BFSimpl::setBlockedCells(vector1DBool& blockedCells) {
-	mapBlockedCells = blockedCells;
+	cellBlocked = blockedCells;
 }
 
 
-void BFSimpl::bfs(std::vector<cellInfo>& finalPath, std::vector<bool>& visited, AlgorithmThread* workingThread) {
+void BFSimpl::bfs(std::vector<cellInfo>& finalPath, def_type::vector1DBool& visited, AlgorithmThread* workingThread) {
 	queue<int> q;
 
 	visited[m_source] = true;
@@ -64,7 +64,7 @@ void BFSimpl::bfs(std::vector<cellInfo>& finalPath, std::vector<bool>& visited, 
 
 		//checking if thread was destroyed in parent
 		if (!workingThread->TestDestroy()) {
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(curr, std::to_string(finalPath[curr].when), wxColour(204, 204, 0));
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(curr, std::to_string(finalPath[curr].when), def_col::VISITED_COLOUR);
 			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 			wxMilliSleep(100);
 		}
@@ -100,7 +100,7 @@ void BFSimpl::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread
 	while (temp != m_source) {
 
 		if (!workingThread->TestDestroy()) {
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, "", wxColour(51, 255, 51));
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, "", def_col::PATH_COLOUR);
 			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 			if (finalPath[temp].parent == -1)
 				return;
@@ -121,7 +121,7 @@ void BFSimpl::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread
 
 bool BFSimpl::isSafe(const int& i, const int& j) {
 
-	return ((i >= 0 && j >= 0) && (i < m_MAP_ROWS && j < m_MAP_COLS) && !mapBlockedCells[i * m_MAP_COLS + j]);
+	return ((i >= 0 && j >= 0) && (i < m_MAP_ROWS && j < m_MAP_COLS) && !cellBlocked[i * m_MAP_COLS + j]);
 
 }
 

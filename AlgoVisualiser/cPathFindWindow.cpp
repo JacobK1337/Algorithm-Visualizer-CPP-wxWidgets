@@ -3,17 +3,20 @@
 wxBEGIN_EVENT_TABLE(cPathFindWindow, wxFrame)
 EVT_COMMAND(evt_id::THREAD_END_ID, wxEVT_THREAD_END, cPathFindWindow::onThreadEnd)
 EVT_COMMAND(evt_id::THREAD_BREAK_ID, wxEVT_THREAD_BREAK, cPathFindWindow::onThreadBreak)
+EVT_CLOSE(cPathFindWindow::OnClose)
 wxEND_EVENT_TABLE()
 
-using namespace std;
 cPathFindWindow::cPathFindWindow() : AlgorithmFrame(wxString("Pathfinding algorithms"), wxPoint(10, 10), wxSize(1600, 1000)) {
 
 	cPathFindWindow::applyMapConfig();
 	cPathFindWindow::setupToolbar();
-	Connect(evt_id::MAP_UPDATE_REQUEST_ID, wxEVT_MAP_UPDATE_REQUEST, wxThreadEventHandler(cPathFindWindow::cellVisitedUpdate));
+	Connect(evt_id::MAP_UPDATE_REQUEST_ID, wxEVT_MAP_UPDATE_REQUEST, wxThreadEventHandler(cPathFindWindow::cellUpdate));
 
 }
 
+cPathFindWindow::~cPathFindWindow() {
+	delete mapButtons;
+}
 
 void cPathFindWindow::applyMapConfig() {
 	MapConfig DIJKSTRA_CONFIG = { 15, 15, "Dijkstra shortest path" };
@@ -42,7 +45,7 @@ void cPathFindWindow::setupMap() {
 
 	int t_MAP_ROWS = mapConfig[currentMapType].MAP_ROWS;
 	int t_MAP_COLS = mapConfig[currentMapType].MAP_COLS;
-	mapButtonBlocked = vector<bool>(t_MAP_ROWS * t_MAP_COLS, false);
+	mapButtonBlocked = std::vector<bool>(t_MAP_ROWS * t_MAP_COLS, false);
 
 	mapButtons = new wxButton * [t_MAP_ROWS * t_MAP_COLS];
 	wxGridSizer* mapSizer = new wxGridSizer(t_MAP_ROWS, t_MAP_COLS, 0, 0);
@@ -66,36 +69,43 @@ void cPathFindWindow::setupMap() {
 
 }
 
-void cPathFindWindow::setupAlgorithmList()
-{
-}
-
 void cPathFindWindow::setupToolbar() {
 
+	wxFont toolbarFont(15, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
+
 	algorithmTools = this->CreateToolBar(wxTB_HORIZONTAL, wxID_ANY);
+	algorithmTools->SetBackgroundColour(wxColour(255, 255, 255));
+
 	algorithmChoice = new wxChoice(algorithmTools, wxID_ANY, wxDefaultPosition, wxSize(400, 500));
 	algorithmChoice->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &cPathFindWindow::choiceSelected, this);
+	algorithmChoice->SetFont(toolbarFont);
 
-	for (auto& mapType : mapTypeMapping) {
-		algorithmChoice->Append(mapConfig[mapType].MAP_TITLE);
+	for (MAP_TYPE type = MAP_TYPE(MAP_TYPE_START + 1); type < MAP_TYPE_END; type = MAP_TYPE(type + 1)) {
+		algorithmChoice->Append(mapConfig[type].MAP_TITLE);
 	}
 
 	startButton = new wxButton(algorithmTools, wxID_ANY, "Start", wxDefaultPosition, wxSize(400, 100));
 	startButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &cPathFindWindow::onStart, this);
+	startButton->SetFont(toolbarFont);
+	startButton->SetBackgroundColour(wxColour(153, 204, 0));
 
 	sourceButton = new wxButton(algorithmTools, wxID_ANY, "Set source", wxDefaultPosition, wxSize(300, 100));
 	sourceButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &cPathFindWindow::sourceSetButtonClicked, this);
+	sourceButton->SetFont(toolbarFont);
+	sourceButton->SetBackgroundColour(wxColour(255, 255, 0));
 
 	destButton = new wxButton(algorithmTools, wxID_ANY, "Set destination", wxDefaultPosition, wxSize(300, 100));
 	destButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &cPathFindWindow::destSetButtonClicked, this);
+	destButton->SetFont(toolbarFont);
+	destButton->SetBackgroundColour(wxColour(51, 51, 255));
 
 	algorithmTools->AddControl(startButton);
-	algorithmTools->AddStretchableSpace();
-	algorithmTools->AddControl(destButton);
 	algorithmTools->AddStretchableSpace();
 	algorithmTools->AddControl(algorithmChoice);
 	algorithmTools->AddStretchableSpace();
 	algorithmTools->AddControl(sourceButton);
+	algorithmTools->AddStretchableSpace();
+	algorithmTools->AddControl(destButton);
 	algorithmTools->Realize();
 }
 
@@ -104,7 +114,7 @@ void cPathFindWindow::choiceSelected(wxCommandEvent& evt) {
 	wxChoice* currentChoice = (wxChoice*)evt.GetEventObject();
 	int selected = currentChoice->GetCurrentSelection();
 
-	MAP_TYPE selectedMapType = mapTypeMapping[selected];
+	MAP_TYPE selectedMapType = MAP_TYPE(MAP_TYPE_START + selected + 1);//mapTypeMapping[selected];
 
 	currentMapType = selectedMapType;
 
@@ -115,7 +125,7 @@ void cPathFindWindow::choiceSelected(wxCommandEvent& evt) {
 
 void cPathFindWindow::setupDijkstraSp() {
 
-	dijkstraImpl = make_unique<DijkstraSP>(mapConfig[DIJKSTRA].MAP_ROWS, mapConfig[DIJKSTRA].MAP_COLS, (AlgorithmFrame*)this);
+	dijkstraImpl = std::make_unique<DijkstraSP>(mapConfig[DIJKSTRA].MAP_ROWS, mapConfig[DIJKSTRA].MAP_COLS, (AlgorithmFrame*)this);
 	dijkstraImpl->generateValues(algorithmThread);
 
 	cPathFindWindow::enableMapButtons();
@@ -124,29 +134,26 @@ void cPathFindWindow::setupDijkstraSp() {
 
 void cPathFindWindow::setupDfs() {
 
-	dfsImpl = make_unique<DFSimpl>(mapConfig[DFS].MAP_ROWS, mapConfig[DFS].MAP_COLS, (AlgorithmFrame*)this);
-
+	dfsImpl = std::make_unique<DFSimpl>(mapConfig[DFS].MAP_ROWS, mapConfig[DFS].MAP_COLS, (AlgorithmFrame*)this);
 	dfsImpl->generateValues(algorithmThread);
 
 	cPathFindWindow::enableMapButtons();
 	cPathFindWindow::enableToolbarButtons();
-
 }
 
 
 void cPathFindWindow::setupBfs() {
 
-	bfsImpl = make_unique<BFSimpl>(mapConfig[BFS].MAP_ROWS, mapConfig[BFS].MAP_COLS, (AlgorithmFrame*)this);
+	bfsImpl = std::make_unique<BFSimpl>(mapConfig[BFS].MAP_ROWS, mapConfig[BFS].MAP_COLS, (AlgorithmFrame*)this);
 
 	bfsImpl->generateValues(algorithmThread);
 
 	cPathFindWindow::enableMapButtons();
 	cPathFindWindow::enableToolbarButtons();
-
 }
 
 void cPathFindWindow::setupAstar() {
-	aStarImpl = make_unique<AStar>(mapConfig[ASTAR].MAP_ROWS, mapConfig[ASTAR].MAP_COLS, (AlgorithmFrame*)this);
+	aStarImpl = std::make_unique<AStar>(mapConfig[ASTAR].MAP_ROWS, mapConfig[ASTAR].MAP_COLS, (AlgorithmFrame*)this);
 
 	aStarImpl->generateValues(algorithmThread);
 
@@ -189,25 +196,6 @@ void cPathFindWindow::rightButtonClicked(wxMouseEvent& evt) {
 		mapButtonBlocked[buttonId] = false;
 		break;
 
-	}
-}
-
-void cPathFindWindow::buttonClickAction(wxButton* t_buttonClicked) {
-	const int FIRST_DIM_EQ = t_buttonClicked->GetId() - 20000;
-
-	switch (currentMapState) {
-	case CHOOSING_SOURCE:
-		cPathFindWindow::replaceSource(FIRST_DIM_EQ, (std::string)t_buttonClicked->GetLabelText());
-		cPathFindWindow::setMapState(currentMapState = IDLE);
-		break;
-
-	case CHOOSING_DEST:
-		cPathFindWindow::replaceDest(FIRST_DIM_EQ, (std::string)t_buttonClicked->GetLabelText());
-		cPathFindWindow::setMapState(currentMapState = IDLE);
-		break;
-
-	default:
-		break;
 	}
 }
 
@@ -269,11 +257,12 @@ void cPathFindWindow::resetMap() {
 	mapSourceValue = "";
 
 	cPathFindWindow::setMapState(currentMapState = IDLE);
+	startButton->SetLabelText("Start");
 	mapTypeSetup[currentMapType]();
 
 }
 
-void cPathFindWindow::assignAlgorithmThread(const function<void()>& runFunction) {
+void cPathFindWindow::assignAlgorithmThread(const std::function<void()>& runFunction) {
 	algorithmThread = new AlgorithmThread(this, runFunction);
 	algorithmThread->Create();
 	algorithmThread->Run();
@@ -313,12 +302,14 @@ void cPathFindWindow::runBfs() {
 }
 
 void cPathFindWindow::runAstar() {
+
 	if (mapSource != -1 && mapDest != -1) {
 		aStarImpl->setSource(mapSource);
 		aStarImpl->setDest(mapDest);
 		aStarImpl->setBlockedCells(mapButtonBlocked);
 		cPathFindWindow::assignAlgorithmThread([this]() -> void {this->aStarImpl->runAlgorithm(algorithmThread); });
 	}
+
 }
 
 void cPathFindWindow::onThreadEnd(wxCommandEvent& evt) {
@@ -330,7 +321,7 @@ void cPathFindWindow::onThreadBreak(wxCommandEvent& evt) {
 	cPathFindWindow::setMapState(currentMapState = IDLE);
 }
 
-void cPathFindWindow::cellVisitedUpdate(wxThreadEvent& evt) {
+void cPathFindWindow::cellUpdate(wxThreadEvent& evt) {
 
 	def_type::CELL_UPDATE_INFO NEW_DATA = evt.GetPayload<def_type::CELL_UPDATE_INFO>();
 
@@ -383,11 +374,14 @@ void cPathFindWindow::replaceSource(const int t_newSource, const std::string t_n
 		mapButtons[mapSource]->SetLabelText(mapSourceValue);
 	}
 
+
 	mapButtons[t_newSource]->SetBackgroundColour(def_col::SOURCE_COLOUR);
 	mapButtons[t_newSource]->SetLabelText("Source");
 
-	mapSource = t_newSource;
-	mapSourceValue = t_newSourceValue;
+	if (t_newSource != mapSource) {
+		mapSource = t_newSource;
+		mapSourceValue = t_newSourceValue;
+	}
 
 }
 void cPathFindWindow::replaceDest(const int t_newDest, const std::string t_newDestValue) {
@@ -400,8 +394,10 @@ void cPathFindWindow::replaceDest(const int t_newDest, const std::string t_newDe
 	mapButtons[t_newDest]->SetBackgroundColour(def_col::SOURCE_COLOUR);
 	mapButtons[t_newDest]->SetLabelText("Dest");
 
-	mapDest = t_newDest;
-	mapDestValue = t_newDestValue;
+	if (t_newDest != mapDest) {
+		mapDest = t_newDest;
+		mapDestValue = t_newDestValue;
+	}
 }
 void cPathFindWindow::disableMapButtons() {
 
@@ -425,15 +421,28 @@ void cPathFindWindow::enableToolbarButtons()
 {
 	algorithmChoice->Enable();
 	sourceButton->Enable();
+	destButton->Enable();
 }
 
 void cPathFindWindow::disableToolbarButtons()
 {
 	algorithmChoice->Disable();
 	sourceButton->Disable();
+	destButton->Disable();
 }
 
+void cPathFindWindow::OnClose(wxCloseEvent& evt) {
+	//if window is closed while algorithm is running, then delete it. We must wait until the worker thread catches the event.
+	if (currentMapState == RUNNING) {
 
-cPathFindWindow::~cPathFindWindow() {
-	delete mapButtons;
+		algorithmThread->Delete();
+
+		//wait some time to let the thread close.
+		wxMilliSleep(1000);
+	}
+
+	//wait till thread finishes action
+
+	//as default destroy the window.
+	Destroy();
 }

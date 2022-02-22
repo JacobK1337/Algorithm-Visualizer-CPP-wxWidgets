@@ -62,7 +62,7 @@ bool SudokuSolver::solveSudoku(int FIRST_DIM_EQ, AlgorithmThread* workingThread)
 
 
 			if (!workingThread->TestDestroy()) {
-				THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, std::to_string(i), wxColour(255, 255, 255));
+				THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, std::to_string(i), def_col::IDLE_COLOUR);
 				evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 
 				wxMilliSleep(100);
@@ -88,8 +88,8 @@ bool SudokuSolver::solveSudoku(int FIRST_DIM_EQ, AlgorithmThread* workingThread)
 				(*rowFilled)[ROW] --;
 				(*colFilled)[COL] --;
 
-				THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, "", wxColour(255, 255, 255));
-				evt_thread::sendThreadData(wxEVT_MAP_UNCHECK_REQUEST, evt_id::MAP_UNCHECK_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
+				THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, "", def_col::IDLE_COLOUR);
+				evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 
 				SudokuSolver::setRowFinished(ROW, false);
 				SudokuSolver::setColFinished(COL, false);
@@ -116,7 +116,11 @@ void SudokuSolver::generateValues(AlgorithmThread* workingThread) {
 
 	//removing no. of filled cells depending on the difficulty
 
-	SudokuSolver::unFillCells(difficulty[2]);
+
+	//difficulty describes number of unfilled cells
+	const int difficulty = 50;
+
+	SudokuSolver::unFillCells(difficulty);
 
 	SudokuSolver::printSudoku(workingThread);
 }
@@ -131,7 +135,7 @@ void SudokuSolver::printSudoku(AlgorithmThread* workingThread) {
 			const int value = (*sudokuMap)[i][j];
 			std::string updatedValue = value != -1 ? std::to_string(value) : "";
 
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, updatedValue, wxColour(255, 255, 255));
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, updatedValue, def_col::IDLE_COLOUR);
 			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 
 		}
@@ -268,11 +272,11 @@ void SudokuSolver::setRowFinished(const int& ROW, const bool& finished) {
 	switch (finished) {
 
 	case true:
-		newRowColour = wxColour(0, 204, 0);
+		newRowColour = def_col::VISITED_COLOUR;
 		break;
 
 	case false:
-		newRowColour = wxColour(255, 255, 255);
+		newRowColour = def_col::IDLE_COLOUR;
 		break;
 	}
 
@@ -295,11 +299,11 @@ void SudokuSolver::setColFinished(const int& COL, const bool& finished) {
 	switch (finished) {
 
 	case true:
-		newColColour = wxColour(0, 204, 0);
+		newColColour = def_col::VISITED_COLOUR;
 		break;
 
 	case false:
-		newColColour = wxColour(255, 255, 255);
+		newColColour = def_col::IDLE_COLOUR;
 		break;
 	}
 

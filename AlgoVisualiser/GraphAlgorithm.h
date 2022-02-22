@@ -9,6 +9,7 @@ public:
 	virtual void setDest(const int& t_newDest) = 0;
 
 protected:
+	std::vector<bool> cellBlocked;
 	int m_source = -1;
 	int m_dest = -1;
 	virtual bool isSafe(const int& i, const int& j) = 0;

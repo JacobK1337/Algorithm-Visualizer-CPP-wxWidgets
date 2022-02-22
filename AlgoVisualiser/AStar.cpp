@@ -15,7 +15,7 @@ void AStar::generateValues(AlgorithmThread* workingThread)
 		for (int j = 0; j < m_MAP_COLS; j++)
 		{
 			const int FIRST_DIM_EQ = i * m_MAP_COLS + j;
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, "", wxColour(255, 255, 255));
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, "", def_col::IDLE_COLOUR);
 			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 
 		}
@@ -23,7 +23,7 @@ void AStar::generateValues(AlgorithmThread* workingThread)
 }
 
 void AStar::setBlockedCells(def_type::vector1DBool blockedCells) {
-	mapCellBlocked = blockedCells;
+	cellBlocked = blockedCells;
 }
 
 void AStar::setSource(const int& t_newSource)
@@ -66,7 +66,7 @@ void AStar::aStarSearch(AlgorithmThread* workingThread) {
 		std::string truncCellDistance = stream.str();
 		//
 
-		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(cellNum, truncCellDistance, wxColour(204, 204, 0));
+		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(cellNum, truncCellDistance, def_col::VISITED_COLOUR);
 		evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 		wxMilliSleep(100);
 
@@ -122,7 +122,7 @@ void AStar::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread* 
 
 		if (!workingThread->TestDestroy()) {
 
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, "", wxColour(51, 255, 51));
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, "", def_col::PATH_COLOUR);
 			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 			temp = finalPath[temp].parent;
 			wxMilliSleep(100);
@@ -137,15 +137,10 @@ void AStar::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread* 
 
 	}
 }
-bool AStar::isSafe(const int& FIRST_DIM_EQ)
-{
-	return FIRST_DIM_EQ >= 0 && FIRST_DIM_EQ <= m_MAP_ROWS * m_MAP_COLS - 1;//((i >= 0 && j >= 0) && (i < m_MAP_ROWS&& j < m_MAP_COLS));
-}
-
 
 bool AStar::isSafe(const int& i, const int& j)
 {
-	return (((i >= 0 && j >= 0) && (i < m_MAP_ROWS&& j < m_MAP_COLS) && !mapCellBlocked[i * m_MAP_COLS + j]));
+	return (((i >= 0 && j >= 0) && (i < m_MAP_ROWS&& j < m_MAP_COLS) && !cellBlocked[i * m_MAP_COLS + j]));
 }
 
 double AStar::getH(const int& v)

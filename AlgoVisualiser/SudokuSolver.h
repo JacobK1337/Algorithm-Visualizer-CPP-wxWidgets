@@ -13,16 +13,12 @@ public:
 
 private:
 
-	unsigned int m_DIAG_SQRT;
-	const def_type::vector1DInt difficulty = { 20, 30, 45 }; //difficulty represents amount unfilled cells
+	int m_DIAG_SQRT;
 
 	std::unique_ptr<def_type::vector2DInt> sudokuMap;
 	std::unique_ptr<def_type::vector2DBool> inDiagonalSquare;
 	std::unique_ptr<def_type::vector1DInt> rowFilled;
 	std::unique_ptr<def_type::vector1DInt> colFilled;
-
-	//wxEvtHandler* parentEvtHandler = nullptr;
-	std::unique_ptr<def_type::CELL_UPDATE_INFO> THREAD_DATA;
 
 	bool solveSudoku(int FIRST_DIM_EQ, AlgorithmThread* workingThread);
 	void generateValidSquare(const int& ROW, const int& COL);

@@ -1,6 +1,6 @@
 #pragma once
-#include"Algorithm.h"
-class RIMimpl : public Algorithm
+#include"GraphAlgorithm.h"
+class RIMimpl : public GraphAlgorithm
 {
 	// Odziedziczono za poœrednictwem elementu Algorithm
 public:
@@ -10,11 +10,13 @@ public:
 	virtual void runAlgorithm(AlgorithmThread* workingThread) override;
 
 private:
-	std::unique_ptr<def_type::CELL_UPDATE_INFO> THREAD_DATA;
 	std::unique_ptr<std::vector<int>> map;
-	bool ratInAmaze(const int& FIRST_DIM_EQ, std::vector<bool>& solution, AlgorithmThread* workingThread);
+	virtual void setSource(const int& t_newSource) override;
+	virtual void setDest(const int& t_newDest) override;
+	virtual bool isSafe(const int& x, const int& y) override;
+
+	bool ratInAmaze(const int& FIRST_DIM_EQ, def_type::vector1DBool& solution, AlgorithmThread* workingThread);
 	void blockRandomCells();
-	bool isSafe(const int& x, const int& y);
 
 };
 

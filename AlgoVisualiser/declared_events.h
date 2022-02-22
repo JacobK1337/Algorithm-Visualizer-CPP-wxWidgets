@@ -3,7 +3,6 @@
 #include"defined_typenames.h"
 
 DECLARE_EVENT_TYPE(wxEVT_MAP_UPDATE_REQUEST, -1)
-DECLARE_EVENT_TYPE(wxEVT_MAP_UNCHECK_REQUEST, -1)
 
 DECLARE_EVENT_TYPE(wxEVT_THREAD_END, -1)
 DECLARE_EVENT_TYPE(wxEVT_THREAD_BREAK, -1)
@@ -11,7 +10,6 @@ namespace evt_id {
 	const int THREAD_END_ID = 5555;
 	const int THREAD_BREAK_ID = 5559;
 	const int MAP_UPDATE_REQUEST_ID = 5556;
-	const int MAP_UNCHECK_REQUEST_ID = 5558;
 }
 
 namespace evt_thread {

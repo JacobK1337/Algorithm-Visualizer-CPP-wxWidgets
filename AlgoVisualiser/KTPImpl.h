@@ -12,7 +12,6 @@ public:
 	virtual void generateValues(AlgorithmThread* workingThread) override;
 
 private:
-	std::unique_ptr<def_type::CELL_UPDATE_INFO> THREAD_DATA;
 	AlgorithmThread* m_workingThread = nullptr;
 	bool isSafe(const int& x, const int& y, def_type::vector2DInt& solution);
 	bool findSolution(const int& x, const int& y, const int& numOfVisited, def_type::vector2DInt& solution, def_type::vector1DInt& xShift, def_type::vector1DInt& yShift);

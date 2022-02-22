@@ -10,13 +10,28 @@
 
 class cPathFindWindow : AlgorithmFrame
 {
-private:
 
+public:
+	cPathFindWindow();
+	~cPathFindWindow();
+	wxDECLARE_EVENT_TABLE();
+
+private:
 	int mapSource = -1;
 	int mapDest = -1;
 	std::string mapSourceValue = "";
 	std::string mapDestValue = "";
-	const enum MAP_TYPE{DIJKSTRA, DFS, BFS, ASTAR};
+	std::vector<bool> mapButtonBlocked;
+	const enum MAP_TYPE{
+		MAP_TYPE_START,
+
+		DIJKSTRA, 
+		DFS,
+		BFS, 
+		ASTAR,
+
+		MAP_TYPE_END
+	};
 
 	MAP_TYPE currentMapType;
 	MAP_STATE currentMapState = IDLE;
@@ -30,7 +45,6 @@ private:
 	//wxWidgets elements
 	wxPanel* frameContent = nullptr;
 	wxButton** mapButtons = nullptr;
-	std::vector<bool> mapButtonBlocked;
 
 	wxToolBar* algorithmTools = nullptr;
 	wxChoice* algorithmChoice = nullptr;
@@ -42,10 +56,7 @@ private:
 	AlgorithmThread* algorithmThread = nullptr;
 
 	//algorithm setup/description/start/onclick maps
-	std::vector<MAP_TYPE> mapTypeMapping = {
-		DIJKSTRA, DFS, BFS, ASTAR
-	};
-
+	
 	std::map<MAP_TYPE, MapConfig> mapConfig;
 
 	std::map<MAP_TYPE, std::string> mapTypeDesc = {
@@ -80,7 +91,6 @@ private:
 private:
 	// Odziedziczono za poœrednictwem elementu AlgorithmFrame
 	virtual void setupMap() override;
-	virtual void setupAlgorithmList() override;
 	virtual void setupToolbar() override;
 	virtual void onStart(wxCommandEvent& evt) override;
 	virtual void runAlgorithm() override;
@@ -92,7 +102,7 @@ private:
 	virtual void enableToolbarButtons() override;
 	virtual void disableToolbarButtons() override;
 	virtual void replaceSource(const int t_newSource, const std::string t_newSourceValue) override;
-	void replaceDest(const int t_newDest, const std::string t_newDestValue);
+	virtual void replaceDest(const int t_newDest, const std::string t_newDestValue) override;
 	virtual void assignAlgorithmThread(const std::function<void()>& runFunction) override;
 	virtual void onThreadEnd(wxCommandEvent& evt) override;
 	virtual void onThreadBreak(wxCommandEvent& evt) override;
@@ -101,7 +111,7 @@ private:
 	virtual void rightButtonClicked(wxMouseEvent& evt) override;
 	virtual void sourceSetButtonClicked(wxCommandEvent& evt) override;
 	void destSetButtonClicked(wxCommandEvent& evt);
-	virtual void cellVisitedUpdate(wxThreadEvent& evt) override;
+	virtual void cellUpdate(wxThreadEvent& evt) override;
 	virtual void updateCellColor(const int& FIRST_DIM_EQ, wxColour const& t_newColour) override;
 	virtual void updateCellValue(const int& FIRST_DIM_EQ, wxString const& t_newValue) override;
 
@@ -115,20 +125,9 @@ private:
 	void runDfs();
 	void runBfs();
 	void runAstar();
-	/*
-	void dijkstraButtonClickAction(wxButton* t_buttonClicked);
-	void dfsButtonClickAction(wxButton* t_buttonClicked);
-	void bfsButtonClickAction(wxButton* t_buttonClicked);
-	void aStarButtonClickAction(wxButton* t_buttonClicked);
-	*/
-
-	void buttonClickAction(wxButton* t_buttonClicked);
 
 
 	void applyMapConfig();
-public:
-	cPathFindWindow();
-	~cPathFindWindow();
-	wxDECLARE_EVENT_TABLE();
+	void OnClose(wxCloseEvent& evt);
 };
 

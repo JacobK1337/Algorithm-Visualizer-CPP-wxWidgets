@@ -2,18 +2,18 @@
 
 wxBEGIN_EVENT_TABLE(cBacktrackWindow, wxFrame)
 EVT_COMMAND(evt_id::THREAD_END_ID, wxEVT_THREAD_END, cBacktrackWindow::onThreadEnd)
+EVT_CLOSE(cBacktrackWindow::OnClose)
 wxEND_EVENT_TABLE()
 
 cBacktrackWindow::cBacktrackWindow() : AlgorithmFrame(wxString("Backtracking algorithms"), wxPoint(10, 10), wxSize(1600, 1000)) {
 
 	cBacktrackWindow::applyMapConfig();
 	cBacktrackWindow::setupToolbar();
-	Connect(evt_id::MAP_UPDATE_REQUEST_ID, wxEVT_MAP_UPDATE_REQUEST, wxThreadEventHandler(cBacktrackWindow::cellVisitedUpdate));
-	Connect(evt_id::MAP_UNCHECK_REQUEST_ID, wxEVT_MAP_UNCHECK_REQUEST, wxThreadEventHandler(cBacktrackWindow::cellUncheckUpdate));
-
+	Connect(evt_id::MAP_UPDATE_REQUEST_ID, wxEVT_MAP_UPDATE_REQUEST, wxThreadEventHandler(cBacktrackWindow::cellUpdate));
 }
 
-void cBacktrackWindow::applyMapConfig() {
+void cBacktrackWindow::applyMapConfig()
+{
 	MapConfig KNIGHT_CONFIG = { 5, 5, "Knight's tour problem" };
 	MapConfig SUDOKU_CONFIG = { 9, 9, "Sudoku Solver" };
 	MapConfig RAT_CONFIG = { 7, 7, "Rat in a maze problem" };
@@ -23,43 +23,23 @@ void cBacktrackWindow::applyMapConfig() {
 	mapConfig.insert(std::make_pair(RAT, RAT_CONFIG));
 }
 
-cBacktrackWindow::~cBacktrackWindow() {
+cBacktrackWindow::~cBacktrackWindow()
+{
 	delete mapButtons;
 }
 
 void cBacktrackWindow::setupKnightProblem()
 {
 	ktpImpl = std::make_unique<KTPImpl>(mapConfig[KNIGHT].MAP_ROWS, mapConfig[KNIGHT].MAP_COLS, (AlgorithmFrame*)this);
-
 	ktpImpl->generateValues(algorithmThread);
-
-	cBacktrackWindow::enableMapButtons();
-	cBacktrackWindow::enableToolbarButtons();
 }
 
 void cBacktrackWindow::runKnightProblem()
 {
 	if (mapSource != -1) {
 		cBacktrackWindow::setMapState(currentMapState = RUNNING);
-		cBacktrackWindow::disableMapButtons();
+		ktpImpl->setSource(mapSource);
 		cBacktrackWindow::assignAlgorithmThread([this]() -> void {this->ktpImpl->runAlgorithm(algorithmThread); });
-	}
-}
-
-void cBacktrackWindow::knightMapClick(wxButton* button)
-{
-	const int FIRST_DIM_EQ = button->GetId() - 20000;
-
-	switch (currentMapState) {
-	case CHOOSING_SOURCE: {
-		cBacktrackWindow::replaceSource(FIRST_DIM_EQ, "");
-		ktpImpl->setSource(FIRST_DIM_EQ);
-		cBacktrackWindow::setMapState(currentMapState = IDLE);
-		break;
-	}
-
-	default:
-		break;
 	}
 }
 
@@ -67,34 +47,23 @@ void cBacktrackWindow::setupSudokuSolver()
 {
 	sudokuSolver = std::make_unique<SudokuSolver>(mapConfig[SUDOKU].MAP_ROWS, mapConfig[SUDOKU].MAP_COLS, (AlgorithmFrame*)this);
 	sudokuSolver->generateValues(algorithmThread);
-
-	cBacktrackWindow::enableMapButtons();
-	cBacktrackWindow::enableToolbarButtons();
 }
 
 void cBacktrackWindow::runSudokuSolver()
 {
 	cBacktrackWindow::setMapState(currentMapState = RUNNING);
-	cBacktrackWindow::disableMapButtons();
 	cBacktrackWindow::assignAlgorithmThread([this]() -> void {this->sudokuSolver->runAlgorithm(algorithmThread); });
 }
-void cBacktrackWindow::sudokuSolverMapClick(wxButton* button)
+
+void cBacktrackWindow::setupRim()
 {
-
-}
-
-
-void cBacktrackWindow::setupRim() {
 	rimImpl = std::make_unique<RIMimpl>(mapConfig[RAT].MAP_ROWS, mapConfig[RAT].MAP_COLS, (AlgorithmFrame*)this);
 	rimImpl->generateValues(algorithmThread);
-
-	cBacktrackWindow::enableMapButtons();
-	cBacktrackWindow::enableToolbarButtons();
 }
 
-void cBacktrackWindow::runRim() {
+void cBacktrackWindow::runRim()
+{
 	cBacktrackWindow::setMapState(currentMapState = RUNNING);
-	cBacktrackWindow::disableMapButtons();
 	cBacktrackWindow::assignAlgorithmThread([this]() -> void {this->rimImpl->runAlgorithm(algorithmThread); });
 }
 
@@ -110,6 +79,7 @@ void cBacktrackWindow::setupMap()
 
 	int t_MAP_ROWS = mapConfig[currentMapType].MAP_ROWS;
 	int t_MAP_COLS = mapConfig[currentMapType].MAP_COLS;
+	mapSource = -1;
 
 	mapButtons = new wxButton * [t_MAP_ROWS * t_MAP_COLS];
 	wxGridSizer* mapSizer = new wxGridSizer(t_MAP_ROWS, t_MAP_COLS, 0, 0);
@@ -132,27 +102,33 @@ void cBacktrackWindow::setupMap()
 	this->Layout();
 }
 
-void cBacktrackWindow::setupAlgorithmList()
-{
-}
-
 void cBacktrackWindow::setupToolbar()
 {
+	wxFont toolbarFont(15, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
+
+
 	algorithmTools = this->CreateToolBar(wxTB_HORIZONTAL, wxID_ANY);
+	algorithmTools->SetBackgroundColour(wxColour(255, 255, 255));
+
 	algorithmChoice = new wxChoice(algorithmTools, wxID_ANY, wxDefaultPosition, wxSize(400, 500));
 	algorithmChoice->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &cBacktrackWindow::choiceSelected, this);
+	algorithmChoice->SetFont(toolbarFont);
 
-	for (auto& mapType : mapTypeMapping) {
-		algorithmChoice->Append(mapConfig[mapType].MAP_TITLE);
+	for (MAP_TYPE type = MAP_TYPE(MAP_TYPE_START + 1); type < MAP_TYPE_END; type = MAP_TYPE(type + 1)) {
+		algorithmChoice->Append(mapConfig[type].MAP_TITLE);
 	}
 
 	startButton = new wxButton(algorithmTools, wxID_ANY, "Start", wxDefaultPosition, wxSize(400, 100));
 	startButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &cBacktrackWindow::onStart, this);
+	startButton->SetFont(toolbarFont);
+	startButton->SetBackgroundColour(wxColour(153, 204, 0));
 
 	sourceButton = new wxButton(algorithmTools, wxID_ANY, "Set source", wxDefaultPosition, wxSize(300, 100));
 	sourceButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &cBacktrackWindow::sourceSetButtonClicked, this);
+	sourceButton->SetFont(toolbarFont);
+	sourceButton->SetBackgroundColour(wxColour(255, 255, 0));
 
-
+	//adding all controls
 	algorithmTools->AddControl(startButton);
 	algorithmTools->AddStretchableSpace();
 	algorithmTools->AddControl(algorithmChoice);
@@ -176,7 +152,22 @@ void cBacktrackWindow::onStart(wxCommandEvent& evt)
 		break;
 	}
 }
+void cBacktrackWindow::mapButtonClicked(wxCommandEvent& evt)
+{
 
+	wxButton* mapButtonClicked = (wxButton*)evt.GetEventObject();
+	const int FIRST_DIM_EQ = mapButtonClicked->GetId() - 20000;
+
+	switch (currentMapState) {
+	case CHOOSING_SOURCE:
+		cBacktrackWindow::replaceSource(FIRST_DIM_EQ, (std::string)mapButtonClicked->GetLabelText());
+		cBacktrackWindow::setMapState(currentMapState = IDLE);
+		break;
+
+	default:
+		break;
+	}
+}
 void cBacktrackWindow::runAlgorithm()
 {
 	mapTypeStart[currentMapType]();
@@ -207,11 +198,11 @@ void cBacktrackWindow::setMapState(MAP_STATE t_mapState)
 	case IDLE:
 		cBacktrackWindow::enableMapButtons();
 		cBacktrackWindow::enableToolbarButtons();
-		cBacktrackWindow::enableMapButtons();
 		startButton->SetLabelText("Start");
 		break;
 
 	case RUNNING:
+		cBacktrackWindow::disableToolbarButtons();
 		cBacktrackWindow::disableMapButtons();
 		startButton->SetLabelText("Stop");
 		break;
@@ -220,8 +211,6 @@ void cBacktrackWindow::setMapState(MAP_STATE t_mapState)
 		break;
 
 	case FINISHED:
-		cBacktrackWindow::enableMapButtons();
-		cBacktrackWindow::enableToolbarButtons();
 		cBacktrackWindow::enableMapButtons();
 		startButton->SetLabelText("Restart");
 		break;
@@ -235,9 +224,6 @@ void cBacktrackWindow::disableMapButtons()
 			const int FIRST_DIM_EQ = i * mapConfig[currentMapType].MAP_COLS + j;
 			mapButtons[FIRST_DIM_EQ]->Disable();
 		}
-
-	algorithmChoice->Disable();
-	sourceButton->Disable();
 }
 
 void cBacktrackWindow::enableMapButtons()
@@ -247,9 +233,6 @@ void cBacktrackWindow::enableMapButtons()
 			const int FIRST_DIM_EQ = i * mapConfig[currentMapType].MAP_COLS + j;
 			mapButtons[FIRST_DIM_EQ]->Enable();
 		}
-
-	algorithmChoice->Enable();
-	sourceButton->Enable();
 }
 
 void cBacktrackWindow::enableToolbarButtons()
@@ -275,12 +258,17 @@ void cBacktrackWindow::replaceSource(const int t_newSource, const std::string t_
 	mapButtons[t_newSource]->SetBackgroundColour(wxColour(153, 255, 255));
 	mapButtons[t_newSource]->SetLabelText("Source");
 
-	mapSource = t_newSource;
-	mapSourceValue = t_newSourceValue;
+	if (t_newSource != mapSource) {
+		mapSource = t_newSource;
+		mapSourceValue = t_newSourceValue;
+	}
 
 }
 
+// none of the algorithms require setting the destination.
+void cBacktrackWindow::replaceDest(const int t_newDest, const std::string t_newDestValue) {
 
+}
 
 void cBacktrackWindow::assignAlgorithmThread(const std::function<void()>& runFunction)
 {
@@ -293,8 +281,10 @@ void cBacktrackWindow::onThreadEnd(wxCommandEvent& evt)
 {
 	cBacktrackWindow::setMapState(currentMapState = FINISHED);
 }
-void cBacktrackWindow::onThreadBreak(wxCommandEvent& evt) {
 
+void cBacktrackWindow::onThreadBreak(wxCommandEvent& evt)
+{
+	cBacktrackWindow::setMapState(currentMapState = IDLE);
 }
 
 void cBacktrackWindow::choiceSelected(wxCommandEvent& evt)
@@ -302,33 +292,27 @@ void cBacktrackWindow::choiceSelected(wxCommandEvent& evt)
 	wxChoice* currentChoice = (wxChoice*)evt.GetEventObject();
 	int selected = currentChoice->GetCurrentSelection();
 
-	MAP_TYPE selectedMapType = mapTypeMapping[selected];
+	MAP_TYPE selectedMapType = MAP_TYPE(MAP_TYPE_START + selected + 1);
 
 	currentMapType = selectedMapType;
 
 	setupMap();
 	mapTypeSetup[currentMapType]();
-}
 
-void cBacktrackWindow::mapButtonClicked(wxCommandEvent& evt)
-{
-	wxButton* mapButtonClicked = (wxButton*)evt.GetEventObject();
-
-	mapTypeOnClick[currentMapType](mapButtonClicked);
+	cBacktrackWindow::enableMapButtons();
+	cBacktrackWindow::enableToolbarButtons();
 }
 
 void cBacktrackWindow::rightButtonClicked(wxMouseEvent& evt)
 {
-
 }
-
 
 void cBacktrackWindow::sourceSetButtonClicked(wxCommandEvent& evt)
 {
 	cBacktrackWindow::setMapState(currentMapState = CHOOSING_SOURCE);
 }
 
-void cBacktrackWindow::cellVisitedUpdate(wxThreadEvent& evt)
+void cBacktrackWindow::cellUpdate(wxThreadEvent& evt)
 {
 
 	def_type::CELL_UPDATE_INFO NEW_DATA = evt.GetPayload<def_type::CELL_UPDATE_INFO>();
@@ -339,18 +323,6 @@ void cBacktrackWindow::cellVisitedUpdate(wxThreadEvent& evt)
 
 	cBacktrackWindow::updateCellColor(FIRST_DIM_EQ, newColour);
 	cBacktrackWindow::updateCellValue(FIRST_DIM_EQ, wxString(newValue));
-
-}
-void cBacktrackWindow::cellUncheckUpdate(wxThreadEvent& evt) {
-
-	def_type::CELL_UPDATE_INFO NEW_DATA = evt.GetPayload<def_type::CELL_UPDATE_INFO>();
-
-	int FIRST_DIM_EQ = NEW_DATA.FIRST_DIM_EQ;
-	std::string newValue = NEW_DATA.newValue;
-	wxColour newColour = NEW_DATA.newColour;
-
-	cBacktrackWindow::updateCellColor(FIRST_DIM_EQ, newColour);
-	cBacktrackWindow::updateCellValue(FIRST_DIM_EQ, wxString(""));
 
 }
 
@@ -364,3 +336,18 @@ void cBacktrackWindow::updateCellValue(const int& FIRST_DIM_EQ, wxString const& 
 	mapButtons[FIRST_DIM_EQ]->SetLabelText(t_newValue);
 }
 
+void cBacktrackWindow::OnClose(wxCloseEvent& evt) {
+	//if window is closed while algorithm is running, then delete it. We must wait until the worker thread catches the event.
+	if (currentMapState == RUNNING) {
+
+		algorithmThread->Delete();
+
+		//wait some time to let the thread close.
+		wxMilliSleep(1000);
+	}
+
+	//wait till thread finishes action
+
+	//as default destroy the window.
+	Destroy();
+}

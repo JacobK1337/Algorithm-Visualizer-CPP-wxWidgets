@@ -18,7 +18,7 @@ void DijkstraSP::setDest(const int& t_newDest) {
 	m_dest = t_newDest;
 }
 void DijkstraSP::setBlockedCells(vector1DBool& blockedButtons) {
-	mapButtonBlocked = blockedButtons;
+	cellBlocked = blockedButtons;
 }
 
 
@@ -34,7 +34,7 @@ void DijkstraSP::generateValues(AlgorithmThread* workingThread)
 			(*costList)[i][j] = randomNum;
 
 			if (FIRST_DIM_EQ != m_source) {
-				THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, std::to_string((*costList)[i][j]), wxColour(255, 255, 255));
+				THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, std::to_string((*costList)[i][j]), def_col::IDLE_COLOUR);
 				evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 			}
 
@@ -78,7 +78,7 @@ void DijkstraSP::dijkstra(std::vector<cellInfo>& finalPath, AlgorithmThread* wor
 						currentDistances.push(make_pair(finalPath[nextCellNum].cost, nextCellNum));
 
 						if (!workingThread->TestDestroy() && nextCellNum != m_dest) {
-							THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(nextCellNum, std::to_string(finalPath[nextCellNum].cost), wxColour(204, 204, 0));
+							THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(nextCellNum, std::to_string(finalPath[nextCellNum].cost), def_col::VISITED_COLOUR);
 							evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 							wxMilliSleep(100);
 						}
@@ -102,7 +102,7 @@ void DijkstraSP::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThr
 
 		if (!workingThread->TestDestroy()) {
 
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, "", wxColour(51, 255, 51));
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, "", def_col::PATH_COLOUR);
 			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 
 			if (finalPath[temp].parent == -1)
@@ -126,6 +126,6 @@ void DijkstraSP::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThr
 
 bool DijkstraSP::isSafe(const int& i, const int& j)
 {
-	return ((i >= 0 && j >= 0) && (i < m_MAP_ROWS&& j < m_MAP_COLS) && !mapButtonBlocked[i * m_MAP_COLS + j]);
+	return ((i >= 0 && j >= 0) && (i < m_MAP_ROWS&& j < m_MAP_COLS) && !cellBlocked[i * m_MAP_COLS + j]);
 }
 

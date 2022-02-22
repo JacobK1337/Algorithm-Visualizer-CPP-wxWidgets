@@ -17,7 +17,7 @@ void DFSimpl::generateValues(AlgorithmThread* workingThread)
 		for (int j = 0; j < m_MAP_COLS; j++)
 		{
 			const int FIRST_DIM_EQ = i * m_MAP_COLS + j;
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, "", wxColour(255, 255, 255));
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, "", def_col::IDLE_COLOUR);
 			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 
 		}
@@ -34,7 +34,7 @@ void DFSimpl::setDest(const int& t_newDest) {
 }
 
 void DFSimpl::setBlockedCells(vector<bool>& blockedCells) {
-	mapBlockedCells = blockedCells;
+	cellBlocked = blockedCells;
 }
 
 void DFSimpl::runAlgorithm(AlgorithmThread* workingThread)
@@ -47,13 +47,13 @@ void DFSimpl::runAlgorithm(AlgorithmThread* workingThread)
 	dfs(m_source, finalPath, visited, workingThread);
 }
 
-void DFSimpl::dfs(const int& src, std::vector<cellInfo>& finalPath, std::vector<bool>& visited, AlgorithmThread* workingThread) {
+void DFSimpl::dfs(const int& src, std::vector<cellInfo>& finalPath, def_type::vector1DBool& visited, AlgorithmThread* workingThread) {
 
 	visited[src] = true;
 
 	if (src != m_source && !workingThread->TestDestroy()) {
 
-		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(src, std::to_string(finalPath[src].when), wxColour(204, 204, 0));
+		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(src, std::to_string(finalPath[src].when), def_col::VISITED_COLOUR);
 		evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 		wxMilliSleep(100);
 	}
@@ -87,7 +87,7 @@ void DFSimpl::dfs(const int& src, std::vector<cellInfo>& finalPath, std::vector<
 
 bool DFSimpl::isSafe(const int& i, const int& j)
 {
-	return ((i >= 0 && j >= 0) && (i < m_MAP_ROWS && j < m_MAP_COLS) && !mapBlockedCells[i * m_MAP_COLS + j]);
+	return ((i >= 0 && j >= 0) && (i < m_MAP_ROWS && j < m_MAP_COLS) && !cellBlocked[i * m_MAP_COLS + j]);
 
 }
 
@@ -98,7 +98,7 @@ void DFSimpl::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread
 	while (temp != m_source) {
 
 		if (!workingThread->TestDestroy()) {
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, "", wxColour(51, 255, 51));
+			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, "", def_col::PATH_COLOUR);
 			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
 			if (finalPath[temp].parent == -1)
 				return;

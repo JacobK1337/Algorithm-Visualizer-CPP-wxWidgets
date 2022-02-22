@@ -3,6 +3,7 @@
 #include"AlgorithmThread.h"
 #include"defined_typenames.h"
 #include"declared_events.h"
+#include"defined_colours.h"
 class Algorithm
 {
 public:
@@ -14,6 +15,7 @@ public:
 protected:
 	const int m_MAP_ROWS;
 	const int m_MAP_COLS;
+	std::unique_ptr<def_type::CELL_UPDATE_INFO> THREAD_DATA;
 	wxEvtHandler* m_parentEventHandler;
 };
 
