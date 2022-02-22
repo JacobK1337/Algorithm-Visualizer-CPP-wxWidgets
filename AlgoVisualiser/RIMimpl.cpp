@@ -47,9 +47,8 @@ bool RIMimpl::ratInAmaze(const int& FIRST_DIM_EQ, def_type::vector1DBool& soluti
 		solution[FIRST_DIM_EQ] = true;
 
 		//setting the cell as visited
-		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, "", def_col::VISITED_COLOUR);
-		evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
-		wxMilliSleep(200);
+		
+		animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW, FIRST_DIM_EQ, "", animation::DEFAULT_DELAY, m_parentEventHandler);
 
 		if (ratInAmaze(FIRST_DIM_EQ + m_MAP_COLS, solution, workingThread))
 			return true;
@@ -58,10 +57,8 @@ bool RIMimpl::ratInAmaze(const int& FIRST_DIM_EQ, def_type::vector1DBool& soluti
 			return true;
 		
 		//no solution, removing the cell from solution path
-		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, "", def_col::IDLE_COLOUR);
-		evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
-		wxMilliSleep(200);
-
+		
+		animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_WHITE, FIRST_DIM_EQ, "", animation::DEFAULT_DELAY, m_parentEventHandler);
 		solution[FIRST_DIM_EQ] = false;
 
 		return false;
@@ -92,15 +89,16 @@ void RIMimpl::generateValues(AlgorithmThread* workingThread)
 				break;
 			}
 
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, updatedValue, updatedColour);
-			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
+			animation::cellColorTransition(std::vector<wxColour>{updatedColour}, FIRST_DIM_EQ, "", 0, m_parentEventHandler);
 		}
 
 	//setting the source and destination;
 	RIMimpl::setSource(0);
 	RIMimpl::setDest(m_MAP_ROWS * m_MAP_COLS - 1);
-	evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, def_type::CELL_UPDATE_INFO(0, "Source", def_col::SOURCE_COLOUR));
-	evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, def_type::CELL_UPDATE_INFO(m_MAP_ROWS * m_MAP_COLS - 1, "Dest", def_col::DEST_COLOUR));
+	
+	wxColour distinctColour = wxColour(153, 255, 0);
+	animation::cellColorTransition(std::vector<wxColour>{distinctColour}, 0, "Source", 0, m_parentEventHandler);
+	animation::cellColorTransition(std::vector<wxColour>{distinctColour}, m_MAP_ROWS* m_MAP_COLS - 1, "Dest", 0, m_parentEventHandler);
 }
 
 

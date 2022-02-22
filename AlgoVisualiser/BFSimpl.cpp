@@ -1,7 +1,5 @@
 #include "BFSimpl.h"
 
-using namespace std;
-using namespace def_type;
 BFSimpl::BFSimpl(const int& MAP_ROWS, const int& MAP_COLS, wxEvtHandler* handler) : GraphAlgorithm(MAP_ROWS, MAP_COLS, handler) {
 
 }
@@ -25,9 +23,8 @@ void BFSimpl::generateValues(AlgorithmThread* workingThread)
 		for (int j = 0; j < m_MAP_COLS; j++)
 		{
 			const int FIRST_DIM_EQ = i * m_MAP_COLS + j;
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, "", def_col::IDLE_COLOUR);
-			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
-
+			//animation_nodelay::cellSetup(FIRST_DIM_EQ, "", wxColour(255, 255, 255), m_parentEventHandler);
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_ONSTART, FIRST_DIM_EQ, "", 0, m_parentEventHandler);
 		}
 	}
 }
@@ -41,13 +38,13 @@ void BFSimpl::runAlgorithm(AlgorithmThread* workingThread)
 }
 
 
-void BFSimpl::setBlockedCells(vector1DBool& blockedCells) {
+void BFSimpl::setBlockedCells(def_type::vector1DBool& blockedCells) {
 	cellBlocked = blockedCells;
 }
 
 
 void BFSimpl::bfs(std::vector<cellInfo>& finalPath, def_type::vector1DBool& visited, AlgorithmThread* workingThread) {
-	queue<int> q;
+	std::queue<int> q;
 
 	visited[m_source] = true;
 	finalPath[m_source] = { m_source, 0 };
@@ -64,9 +61,8 @@ void BFSimpl::bfs(std::vector<cellInfo>& finalPath, def_type::vector1DBool& visi
 
 		//checking if thread was destroyed in parent
 		if (!workingThread->TestDestroy()) {
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(curr, std::to_string(finalPath[curr].when), def_col::VISITED_COLOUR);
-			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
-			wxMilliSleep(100);
+			//animation::cellVisitedAnimation(curr, std::to_string(finalPath[curr].when), m_parentEventHandler);
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW, curr, std::to_string(finalPath[curr].when), animation::DEFAULT_DELAY, m_parentEventHandler);
 		}
 
 		else {
@@ -100,14 +96,15 @@ void BFSimpl::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread
 	while (temp != m_source) {
 
 		if (!workingThread->TestDestroy()) {
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, "", def_col::PATH_COLOUR);
-			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
+
+			//animation::cellPathToSourceAnimation(temp, "", m_parentEventHandler);
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_GREEN, temp, "", animation::DEFAULT_DELAY, m_parentEventHandler);
+
 			if (finalPath[temp].parent == -1)
 				return;
 
 			else
 				temp = finalPath[temp].parent;
-			wxMilliSleep(100);
 		}
 
 		else {

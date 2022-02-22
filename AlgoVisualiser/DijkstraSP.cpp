@@ -1,7 +1,5 @@
 #include "DijkstraSP.h"
 
-using namespace std;
-using namespace def_type;
 DijkstraSP::DijkstraSP(const int& MAP_ROWS, const int& MAP_COLS, wxEvtHandler* handler) : GraphAlgorithm(MAP_ROWS, MAP_COLS, handler) {
 
 }
@@ -17,7 +15,7 @@ void DijkstraSP::setSource(const int& t_newSource)
 void DijkstraSP::setDest(const int& t_newDest) {
 	m_dest = t_newDest;
 }
-void DijkstraSP::setBlockedCells(vector1DBool& blockedButtons) {
+void DijkstraSP::setBlockedCells(def_type::vector1DBool& blockedButtons) {
 	cellBlocked = blockedButtons;
 }
 
@@ -34,8 +32,9 @@ void DijkstraSP::generateValues(AlgorithmThread* workingThread)
 			(*costList)[i][j] = randomNum;
 
 			if (FIRST_DIM_EQ != m_source) {
-				THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, std::to_string((*costList)[i][j]), def_col::IDLE_COLOUR);
-				evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
+
+				//animation_nodelay::cellSetup(FIRST_DIM_EQ, std::to_string((*costList)[i][j]), wxColour(255, 255, 255), m_parentEventHandler);
+				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_ONSTART, FIRST_DIM_EQ, std::to_string((*costList)[i][j]), 0, m_parentEventHandler);
 			}
 
 		}
@@ -52,11 +51,11 @@ void DijkstraSP::runAlgorithm(AlgorithmThread* workingThread)
 
 void DijkstraSP::dijkstra(std::vector<cellInfo>& finalPath, AlgorithmThread* workingThread) {
 
-	priority_queue<pair<int, int>, vector<pair<int, int>>, greater<> > currentDistances;
+	std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, std::greater<> > currentDistances;
 	finalPath[m_source].parent = m_source;
 	finalPath[m_source].cost = 0;
 
-	currentDistances.push(make_pair(0, m_source));
+	currentDistances.push(std::make_pair(0, m_source));
 	while (!currentDistances.empty()) {
 
 		int curr = currentDistances.top().second;
@@ -75,12 +74,15 @@ void DijkstraSP::dijkstra(std::vector<cellInfo>& finalPath, AlgorithmThread* wor
 
 						finalPath[nextCellNum].cost = finalPath[curr].cost + currCost;
 						finalPath[nextCellNum].parent = curr;
-						currentDistances.push(make_pair(finalPath[nextCellNum].cost, nextCellNum));
+						currentDistances.push(std::make_pair(finalPath[nextCellNum].cost, nextCellNum));
 
 						if (!workingThread->TestDestroy() && nextCellNum != m_dest) {
-							THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(nextCellNum, std::to_string(finalPath[nextCellNum].cost), def_col::VISITED_COLOUR);
-							evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
-							wxMilliSleep(100);
+
+							animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW, 
+								nextCellNum, 
+								std::to_string(finalPath[nextCellNum].cost), 
+								animation::DEFAULT_DELAY, 
+								m_parentEventHandler);
 						}
 
 						else if(workingThread->TestDestroy()) {
@@ -102,8 +104,11 @@ void DijkstraSP::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThr
 
 		if (!workingThread->TestDestroy()) {
 
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, "", def_col::PATH_COLOUR);
-			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_GREEN,
+				temp,
+				std::to_string(finalPath[temp].cost),
+				animation::DEFAULT_DELAY,
+				m_parentEventHandler);
 
 			if (finalPath[temp].parent == -1)
 				return;
@@ -111,7 +116,6 @@ void DijkstraSP::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThr
 			else
 				temp = finalPath[temp].parent;
 
-			wxMilliSleep(100);
 		}
 
 		else {

@@ -1,9 +1,8 @@
 #pragma once
 #include<wx/wx.h>
 #include"AlgorithmThread.h"
-#include"defined_typenames.h"
-#include"declared_events.h"
-#include"defined_colours.h"
+#include"animation.h"
+
 class Algorithm
 {
 public:

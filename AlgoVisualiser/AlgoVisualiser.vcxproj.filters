@@ -108,6 +108,12 @@
     <ClInclude Include="RIMimpl.h">
       <Filter>Pliki nagłówkowe\backtrack_algorithms</Filter>
     </ClInclude>
+    <ClInclude Include="animation.h">
+      <Filter>Pliki nagłówkowe\side_functions</Filter>
+    </ClInclude>
+    <ClInclude Include="thread_func.h">
+      <Filter>Pliki nagłówkowe\side_functions</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AlgorithmThread.cpp">

@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="Algorithm.h" />
     <ClInclude Include="AlgorithmFrame.h" />
+    <ClInclude Include="animation.h" />
     <ClInclude Include="AStar.h" />
     <ClInclude Include="BFSimpl.h" />
     <ClInclude Include="cApp.h" />
@@ -37,6 +38,7 @@
     <ClInclude Include="AlgorithmThread.h" />
     <ClInclude Include="RIMimpl.h" />
     <ClInclude Include="SudokuSolver.h" />
+    <ClInclude Include="thread_func.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Algorithm.cpp" />

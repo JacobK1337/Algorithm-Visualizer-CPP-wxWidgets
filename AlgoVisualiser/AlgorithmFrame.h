@@ -2,8 +2,6 @@
 #include<wx/wx.h>
 #include<map>
 #include<vector>
-#include"declared_events.h"
-#include"defined_typenames.h"
 #include"AlgorithmThread.h"
 #include"defined_colours.h"
 class AlgorithmFrame : public wxFrame

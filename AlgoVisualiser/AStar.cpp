@@ -15,9 +15,8 @@ void AStar::generateValues(AlgorithmThread* workingThread)
 		for (int j = 0; j < m_MAP_COLS; j++)
 		{
 			const int FIRST_DIM_EQ = i * m_MAP_COLS + j;
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, "", def_col::IDLE_COLOUR);
-			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
-
+			//animation_nodelay::cellSetup(FIRST_DIM_EQ, "", wxColour(255, 255, 255), m_parentEventHandler);
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_ONSTART, FIRST_DIM_EQ, "", 0, m_parentEventHandler);
 		}
 	}
 }
@@ -64,11 +63,9 @@ void AStar::aStarSearch(AlgorithmThread* workingThread) {
 		std::stringstream stream;
 		stream << std::fixed << std::setprecision(2) << cellDistance;
 		std::string truncCellDistance = stream.str();
-		//
-
-		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(cellNum, truncCellDistance, def_col::VISITED_COLOUR);
-		evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
-		wxMilliSleep(100);
+		
+		//animation::cellVisitedAnimation(cellNum, truncCellDistance, m_parentEventHandler);
+		animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW, cellNum, truncCellDistance, animation::DEFAULT_DELAY, m_parentEventHandler);
 
 		calculatedDistances.pop();
 
@@ -122,8 +119,9 @@ void AStar::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread* 
 
 		if (!workingThread->TestDestroy()) {
 
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, "", def_col::PATH_COLOUR);
-			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
+			//animation::cellPathToSourceAnimation(temp, "", m_parentEventHandler);
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_GREEN, temp, "", animation::DEFAULT_DELAY, m_parentEventHandler);
+
 			temp = finalPath[temp].parent;
 			wxMilliSleep(100);
 		}

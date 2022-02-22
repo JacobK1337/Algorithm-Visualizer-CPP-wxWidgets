@@ -43,6 +43,11 @@ bool SudokuSolver::solveSudoku(int FIRST_DIM_EQ, AlgorithmThread* workingThread)
 	if (FIRST_DIM_EQ >= m_MAP_ROWS * m_MAP_COLS - 1)
 		return true;
 
+	if (workingThread->TestDestroy()) {
+		workingThread->flagThreadBreak(true);
+		return false;
+	}
+
 	const int ROW = FIRST_DIM_EQ / m_MAP_COLS;
 	const int COL = FIRST_DIM_EQ % m_MAP_COLS;
 
@@ -62,11 +67,9 @@ bool SudokuSolver::solveSudoku(int FIRST_DIM_EQ, AlgorithmThread* workingThread)
 
 
 			if (!workingThread->TestDestroy()) {
-				THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, std::to_string(i), def_col::IDLE_COLOUR);
-				evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
-
-				wxMilliSleep(100);
+				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW, FIRST_DIM_EQ, std::to_string(i), animation::DEFAULT_DELAY, m_parentEventHandler);
 			}
+
 			else {
 
 				workingThread->flagThreadBreak(true);
@@ -88,12 +91,16 @@ bool SudokuSolver::solveSudoku(int FIRST_DIM_EQ, AlgorithmThread* workingThread)
 				(*rowFilled)[ROW] --;
 				(*colFilled)[COL] --;
 
-				THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, "", def_col::IDLE_COLOUR);
-				evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
+				
+				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_WHITE, FIRST_DIM_EQ, "", animation::DEFAULT_DELAY, m_parentEventHandler);
 
-				SudokuSolver::setRowFinished(ROW, false);
-				SudokuSolver::setColFinished(COL, false);
-				wxMilliSleep(100);
+
+				//modifying whole row/col only if this change made it unfilled.
+				if ((*rowFilled)[ROW] == m_MAP_ROWS - 1)
+					SudokuSolver::setRowFinished(ROW, false);
+
+				if ((*colFilled)[COL] == m_MAP_COLS - 1)
+					SudokuSolver::setColFinished(COL, false);
 			}
 		}
 
@@ -134,9 +141,7 @@ void SudokuSolver::printSudoku(AlgorithmThread* workingThread) {
 			const int FIRST_DIM_EQ = i * m_MAP_COLS + j;
 			const int value = (*sudokuMap)[i][j];
 			std::string updatedValue = value != -1 ? std::to_string(value) : "";
-
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, updatedValue, def_col::IDLE_COLOUR);
-			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_ONSTART, FIRST_DIM_EQ, updatedValue, 0, m_parentEventHandler);
 
 		}
 	}
@@ -267,53 +272,37 @@ bool SudokuSolver::valueFit(const int& ROW, const int& COL, const int& NUM)
 void SudokuSolver::setRowFinished(const int& ROW, const bool& finished) {
 
 
-	wxColour newRowColour;
-
-	switch (finished) {
-
-	case true:
-		newRowColour = def_col::VISITED_COLOUR;
-		break;
-
-	case false:
-		newRowColour = def_col::IDLE_COLOUR;
-		break;
-	}
-
-
 	for (int i = 0; i < m_MAP_COLS; i++) {
 		const int FIRST_DIM_EQ = ROW * m_MAP_COLS + i;
 		if ((*colFilled)[i] != m_MAP_COLS || finished) {
 			std::string updatedValue = (*sudokuMap)[ROW][i] != -1 ? std::to_string((*sudokuMap)[ROW][i]) : "";
 
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, updatedValue, newRowColour);
-			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
+
+			if (finished)
+				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_GREEN, FIRST_DIM_EQ, updatedValue, 10, m_parentEventHandler);
+
+			else
+				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_WHITE, FIRST_DIM_EQ, updatedValue, 10, m_parentEventHandler);
+
+
 		}
 	}
 }
 
 void SudokuSolver::setColFinished(const int& COL, const bool& finished) {
 
-	wxColour newColColour;
-
-	switch (finished) {
-
-	case true:
-		newColColour = def_col::VISITED_COLOUR;
-		break;
-
-	case false:
-		newColColour = def_col::IDLE_COLOUR;
-		break;
-	}
-
+	
 	for (int i = 0; i < m_MAP_ROWS; i++) {
 		const int FIRST_DIM_EQ = i * m_MAP_COLS + COL;
 		if ((*rowFilled)[i] != m_MAP_ROWS || finished) {
 
 			std::string updatedValue = (*sudokuMap)[i][COL] != -1 ? std::to_string((*sudokuMap)[i][COL]) : "";
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, updatedValue, newColColour);
-			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
+			
+			if (finished)
+				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_GREEN, FIRST_DIM_EQ, updatedValue, 10, m_parentEventHandler);
+
+			else
+				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_WHITE, FIRST_DIM_EQ, updatedValue, 10, m_parentEventHandler);
 		}
 	}
 }

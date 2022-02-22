@@ -1,7 +1,5 @@
 #include "DFSimpl.h"
 
-using namespace std;
-using namespace def_type;
 DFSimpl::DFSimpl(const int& MAP_ROWS, const int& MAP_COLS, wxEvtHandler* handler) : GraphAlgorithm(MAP_ROWS, MAP_COLS, handler) {
 
 }
@@ -17,9 +15,7 @@ void DFSimpl::generateValues(AlgorithmThread* workingThread)
 		for (int j = 0; j < m_MAP_COLS; j++)
 		{
 			const int FIRST_DIM_EQ = i * m_MAP_COLS + j;
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, "", def_col::IDLE_COLOUR);
-			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
-
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_ONSTART, FIRST_DIM_EQ, "", 0, m_parentEventHandler);
 		}
 	}
 }
@@ -33,7 +29,7 @@ void DFSimpl::setDest(const int& t_newDest) {
 	m_dest = t_newDest;
 }
 
-void DFSimpl::setBlockedCells(vector<bool>& blockedCells) {
+void DFSimpl::setBlockedCells(def_type::vector1DBool& blockedCells) {
 	cellBlocked = blockedCells;
 }
 
@@ -53,9 +49,8 @@ void DFSimpl::dfs(const int& src, std::vector<cellInfo>& finalPath, def_type::ve
 
 	if (src != m_source && !workingThread->TestDestroy()) {
 
-		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(src, std::to_string(finalPath[src].when), def_col::VISITED_COLOUR);
-		evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
-		wxMilliSleep(100);
+		animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW, src, std::to_string(finalPath[src].when), animation::DEFAULT_DELAY, m_parentEventHandler);
+
 	}
 
 	else if (workingThread->TestDestroy()) {
@@ -98,14 +93,15 @@ void DFSimpl::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread
 	while (temp != m_source) {
 
 		if (!workingThread->TestDestroy()) {
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(temp, "", def_col::PATH_COLOUR);
-			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
+			
+			//animation::cellPathToSourceAnimation(temp, "", m_parentEventHandler);
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_GREEN, temp, "", animation::DEFAULT_DELAY, m_parentEventHandler);
+
 			if (finalPath[temp].parent == -1)
 				return;
 
 			else
 				temp = finalPath[temp].parent;
-			wxMilliSleep(100);
 		}
 
 		else {

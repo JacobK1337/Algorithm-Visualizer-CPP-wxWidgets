@@ -48,10 +48,11 @@ bool KTPImpl::findSolution(const int& x, const int& y, const int& numOfVisited, 
 	if (!m_workingThread->TestDestroy())
 	{
 
-		THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, std::to_string(numOfVisited), def_col::VISITED_COLOUR);
-		evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
-		wxMilliSleep(50);
-
+		animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW, 
+			FIRST_DIM_EQ, 
+			std::to_string(numOfVisited), 
+			animation::DEFAULT_DELAY, 
+			m_parentEventHandler);
 	}
 
 	else 
@@ -77,10 +78,11 @@ bool KTPImpl::findSolution(const int& x, const int& y, const int& numOfVisited, 
 			else {
 				solution[newX][newY] = -1;
 
-				THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(n_FIRST_DIM_EQ, "", def_col::IDLE_COLOUR);
-				evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
-
-				wxMilliSleep(50);
+				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_WHITE,
+					n_FIRST_DIM_EQ,
+					"",
+					animation::DEFAULT_DELAY,
+					m_parentEventHandler);
 			}
 		}
 	}
@@ -93,8 +95,12 @@ void KTPImpl::generateValues(AlgorithmThread* workingThread)
 	for (int i = 0; i < m_MAP_ROWS; i++)
 		for (int j = 0; j < m_MAP_COLS; j++) {
 			const int FIRST_DIM_EQ = i * m_MAP_COLS + j;
-			THREAD_DATA = std::make_unique<def_type::CELL_UPDATE_INFO>(FIRST_DIM_EQ, "", def_col::IDLE_COLOUR);
-			evt_thread::sendThreadData(wxEVT_MAP_UPDATE_REQUEST, evt_id::MAP_UPDATE_REQUEST_ID, m_parentEventHandler, *THREAD_DATA);
+
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_ONSTART,
+				FIRST_DIM_EQ,
+				"",
+				animation::DEFAULT_DELAY,
+				m_parentEventHandler);
 		}
 }
 
