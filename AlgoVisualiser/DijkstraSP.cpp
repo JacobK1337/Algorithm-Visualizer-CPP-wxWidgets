@@ -26,17 +26,16 @@ void DijkstraSP::generateValues(AlgorithmThread* workingThread)
 	costList = std::make_unique<def_type::vector2DInt>(m_MAP_ROWS, def_type::vector1DInt(m_MAP_COLS, 1));
 	for (int i = 0; i < m_MAP_ROWS; i++) {
 		for (int j = 0; j < m_MAP_COLS; j++) {
-			const int FIRST_DIM_EQ = i * m_MAP_COLS + j;
 
+			const int cellNum = i * m_MAP_COLS + j;
 			int randomNum = rand() % 100;
 			(*costList)[i][j] = randomNum;
 
-			if (FIRST_DIM_EQ != m_source) {
-
-				//animation_nodelay::cellSetup(FIRST_DIM_EQ, std::to_string((*costList)[i][j]), wxColour(255, 255, 255), m_parentEventHandler);
-				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_ONSTART, FIRST_DIM_EQ, std::to_string((*costList)[i][j]), 0, m_parentEventHandler);
-			}
-
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_ONSTART, 
+				cellNum, 
+				std::to_string((*costList)[i][j]), 
+				0, 
+				m_parentEventHandler);
 		}
 	}
 
@@ -51,6 +50,7 @@ void DijkstraSP::runAlgorithm(AlgorithmThread* workingThread)
 
 void DijkstraSP::dijkstra(std::vector<cellInfo>& finalPath, AlgorithmThread* workingThread) {
 
+	//priority queue implementation of dijkstra -> fast way of getting smallest cost edge
 	std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, std::greater<> > currentDistances;
 	finalPath[m_source].parent = m_source;
 	finalPath[m_source].cost = 0;
@@ -78,14 +78,15 @@ void DijkstraSP::dijkstra(std::vector<cellInfo>& finalPath, AlgorithmThread* wor
 
 						if (!workingThread->TestDestroy() && nextCellNum != m_dest) {
 
-							animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW, 
-								nextCellNum, 
-								std::to_string(finalPath[nextCellNum].cost), 
-								animation::DEFAULT_DELAY, 
+							animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW,
+								nextCellNum,
+								std::to_string(finalPath[nextCellNum].cost),
+								animation::DEFAULT_DELAY,
 								m_parentEventHandler);
+
 						}
 
-						else if(workingThread->TestDestroy()) {
+						else if (workingThread->TestDestroy()) {
 							workingThread->flagThreadBreak(true);
 							return;
 						}
@@ -104,11 +105,13 @@ void DijkstraSP::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThr
 
 		if (!workingThread->TestDestroy()) {
 
-			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_GREEN,
+			animation::cellColorTransition(
+				animation::DEFAULT_COLOR_TRANS_GREEN,
 				temp,
 				std::to_string(finalPath[temp].cost),
 				animation::DEFAULT_DELAY,
-				m_parentEventHandler);
+				m_parentEventHandler
+			);
 
 			if (finalPath[temp].parent == -1)
 				return;

@@ -2,10 +2,10 @@
 #include <wx/wx.h>
 
 namespace def_col {
-const wxColour SOURCE_COLOUR =  wxColour(153, 204, 255);
-const wxColour DEST_COLOUR = wxColour(153, 204, 204);
-const wxColour IDLE_COLOUR =  wxColour(255, 255, 255);
-const wxColour VISITED_COLOUR =  wxColour(204, 204, 0);
-const wxColour BLOCK_COLOUR =  wxColour(0, 0, 0);
-const wxColour PATH_COLOUR = wxColour(51, 255, 51);
+const wxColour WHITE =  wxColour(255, 255, 255);
+const wxColour YELLOW =  wxColour(255, 255, 0);
+const wxColour BLACK =  wxColour(0, 0, 0);
+const wxColour GREEN = wxColour(51, 255, 51);
+const wxColour BLUE = wxColour(153, 255, 255);
+const wxColour VIOLET = wxColour(255, 153, 255);
 }

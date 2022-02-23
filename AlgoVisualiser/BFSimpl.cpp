@@ -22,9 +22,12 @@ void BFSimpl::generateValues(AlgorithmThread* workingThread)
 	{
 		for (int j = 0; j < m_MAP_COLS; j++)
 		{
-			const int FIRST_DIM_EQ = i * m_MAP_COLS + j;
-			//animation_nodelay::cellSetup(FIRST_DIM_EQ, "", wxColour(255, 255, 255), m_parentEventHandler);
-			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_ONSTART, FIRST_DIM_EQ, "", 0, m_parentEventHandler);
+			const int cellNum = i * m_MAP_COLS + j;
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_ONSTART, 
+				cellNum, 
+				"", 
+				0, 
+				m_parentEventHandler);
 		}
 	}
 }
@@ -59,10 +62,12 @@ void BFSimpl::bfs(std::vector<cellInfo>& finalPath, def_type::vector1DBool& visi
 			return;
 		}
 
-		//checking if thread was destroyed in parent
 		if (!workingThread->TestDestroy()) {
-			//animation::cellVisitedAnimation(curr, std::to_string(finalPath[curr].when), m_parentEventHandler);
-			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW, curr, std::to_string(finalPath[curr].when), animation::DEFAULT_DELAY, m_parentEventHandler);
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW, 
+				curr, 
+				std::to_string(finalPath[curr].when), 
+				animation::DEFAULT_DELAY, 
+				m_parentEventHandler);
 		}
 
 		else {
@@ -97,8 +102,11 @@ void BFSimpl::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread
 
 		if (!workingThread->TestDestroy()) {
 
-			//animation::cellPathToSourceAnimation(temp, "", m_parentEventHandler);
-			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_GREEN, temp, "", animation::DEFAULT_DELAY, m_parentEventHandler);
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_GREEN, 
+				temp, 
+				"", 
+				animation::DEFAULT_DELAY, 
+				m_parentEventHandler);
 
 			if (finalPath[temp].parent == -1)
 				return;

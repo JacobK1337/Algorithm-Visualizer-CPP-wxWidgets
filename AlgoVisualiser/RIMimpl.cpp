@@ -3,7 +3,7 @@
 RIMimpl::RIMimpl(const int& MAP_ROWS, const int& MAP_COLS, wxEvtHandler* handler) : GraphAlgorithm(MAP_ROWS, MAP_COLS, handler)
 {
 	//before blocking all cells are valid
-	map = std::make_unique<std::vector<int>>(m_MAP_ROWS * m_MAP_COLS, 1);
+	map = std::make_unique<def_type::vector1DInt>(m_MAP_ROWS * m_MAP_COLS, 1);
 	RIMimpl::blockRandomCells();
 }
 
@@ -27,10 +27,10 @@ void RIMimpl::setDest(const int& t_newDest)
 	m_dest = t_newDest;
 }
 
-bool RIMimpl::ratInAmaze(const int& FIRST_DIM_EQ, def_type::vector1DBool& solution, AlgorithmThread* workingThread)
+bool RIMimpl::ratInAmaze(const int& cellNum, def_type::vector1DBool& solution, AlgorithmThread* workingThread)
 {
-	if (FIRST_DIM_EQ == m_MAP_ROWS * m_MAP_COLS - 1) {
-		solution[FIRST_DIM_EQ] = true;
+	if (cellNum == m_MAP_ROWS * m_MAP_COLS - 1) {
+		solution[cellNum] = true;
 		return true;
 	}
 
@@ -40,26 +40,35 @@ bool RIMimpl::ratInAmaze(const int& FIRST_DIM_EQ, def_type::vector1DBool& soluti
 	}
 
 
-	if (isSafe(FIRST_DIM_EQ / m_MAP_COLS, FIRST_DIM_EQ % m_MAP_COLS) && !workingThread->TestDestroy()) {
-		if (solution[FIRST_DIM_EQ])
+	if (isSafe(cellNum / m_MAP_COLS, cellNum % m_MAP_COLS) && !workingThread->TestDestroy()) {
+		if (solution[cellNum])
 			return false;
 
-		solution[FIRST_DIM_EQ] = true;
-
 		//setting the cell as visited
-		
-		animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW, FIRST_DIM_EQ, "", animation::DEFAULT_DELAY, m_parentEventHandler);
+		solution[cellNum] = true;
 
-		if (ratInAmaze(FIRST_DIM_EQ + m_MAP_COLS, solution, workingThread))
+
+		if (workingThread->TestDestroy()) {
+			workingThread->flagThreadBreak(true);
+			return false;
+		}
+
+		animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW, 
+			cellNum, 
+			"", 
+			animation::DEFAULT_DELAY, 
+			m_parentEventHandler);
+
+		if (ratInAmaze(cellNum + m_MAP_COLS, solution, workingThread))
 			return true;
 		
-		if (ratInAmaze(FIRST_DIM_EQ + 1, solution, workingThread))
+		if (ratInAmaze(cellNum + 1, solution, workingThread))
 			return true;
 		
 		//no solution, removing the cell from solution path
 		
-		animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_WHITE, FIRST_DIM_EQ, "", animation::DEFAULT_DELAY, m_parentEventHandler);
-		solution[FIRST_DIM_EQ] = false;
+		animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_WHITE, cellNum, "", animation::DEFAULT_DELAY, m_parentEventHandler);
+		solution[cellNum] = false;
 
 		return false;
 	}
@@ -76,11 +85,11 @@ void RIMimpl::generateValues(AlgorithmThread* workingThread)
 	for (int i = 0; i < m_MAP_ROWS; i++)
 		for (int j = 0; j < m_MAP_COLS; j++) {
 
-			const int FIRST_DIM_EQ = i * m_MAP_COLS + j;
+			const int cellNum = i * m_MAP_COLS + j;
 			std::string updatedValue = "";
 			wxColour updatedColour;
 
-			switch ((*map)[FIRST_DIM_EQ]) {
+			switch ((*map)[cellNum]) {
 			case 1:
 				updatedColour = wxColour(255, 255, 255);
 				break;
@@ -89,7 +98,7 @@ void RIMimpl::generateValues(AlgorithmThread* workingThread)
 				break;
 			}
 
-			animation::cellColorTransition(std::vector<wxColour>{updatedColour}, FIRST_DIM_EQ, "", 0, m_parentEventHandler);
+			animation::cellColorTransition(std::vector<wxColour>{updatedColour}, cellNum, "", 0, m_parentEventHandler);
 		}
 
 	//setting the source and destination;
@@ -97,8 +106,8 @@ void RIMimpl::generateValues(AlgorithmThread* workingThread)
 	RIMimpl::setDest(m_MAP_ROWS * m_MAP_COLS - 1);
 	
 	wxColour distinctColour = wxColour(153, 255, 0);
-	animation::cellColorTransition(std::vector<wxColour>{distinctColour}, 0, "Source", 0, m_parentEventHandler);
-	animation::cellColorTransition(std::vector<wxColour>{distinctColour}, m_MAP_ROWS* m_MAP_COLS - 1, "Dest", 0, m_parentEventHandler);
+	animation::cellColorTransition({distinctColour}, 0, "Source", 0, m_parentEventHandler);
+	animation::cellColorTransition({distinctColour}, m_MAP_ROWS* m_MAP_COLS - 1, "Dest", 0, m_parentEventHandler);
 }
 
 

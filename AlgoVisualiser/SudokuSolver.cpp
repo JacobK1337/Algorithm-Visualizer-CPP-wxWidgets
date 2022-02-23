@@ -18,6 +18,7 @@ void SudokuSolver::runAlgorithm(AlgorithmThread* workingThread)
 {
 
 	int startPoint = 0;
+	//finding first empty cell
 	while ((*sudokuMap)[startPoint / m_MAP_ROWS][startPoint % m_MAP_COLS] != -1)
 		startPoint++;
 
@@ -30,7 +31,7 @@ void SudokuSolver::runAlgorithm(AlgorithmThread* workingThread)
 	}
 
 	for (int i = 0; i < m_MAP_COLS; i++) {
-		if ((*colFilled)[i] == m_MAP_ROWS)
+		if ((*colFilled)[i] == m_MAP_COLS)
 			SudokuSolver::setColFinished(i, true);
 	}
 
@@ -38,9 +39,9 @@ void SudokuSolver::runAlgorithm(AlgorithmThread* workingThread)
 }
 
 
-bool SudokuSolver::solveSudoku(int FIRST_DIM_EQ, AlgorithmThread* workingThread)
+bool SudokuSolver::solveSudoku(int cellNum, AlgorithmThread* workingThread)
 {
-	if (FIRST_DIM_EQ >= m_MAP_ROWS * m_MAP_COLS - 1)
+	if (cellNum >= m_MAP_ROWS * m_MAP_COLS - 1)
 		return true;
 
 	if (workingThread->TestDestroy()) {
@@ -48,8 +49,8 @@ bool SudokuSolver::solveSudoku(int FIRST_DIM_EQ, AlgorithmThread* workingThread)
 		return false;
 	}
 
-	const int ROW = FIRST_DIM_EQ / m_MAP_COLS;
-	const int COL = FIRST_DIM_EQ % m_MAP_COLS;
+	const int ROW = cellNum / m_MAP_COLS;
+	const int COL = cellNum % m_MAP_COLS;
 
 	for (int i = 1; i <= m_MAP_ROWS; i++) {
 
@@ -60,22 +61,23 @@ bool SudokuSolver::solveSudoku(int FIRST_DIM_EQ, AlgorithmThread* workingThread)
 			(*rowFilled)[ROW] ++;
 			(*colFilled)[COL] ++;
 
-			int nextCell = FIRST_DIM_EQ + 1;
+			int nextCell = cellNum + 1;
 
 			while ((*sudokuMap)[nextCell / m_MAP_COLS][nextCell % m_MAP_COLS] != -1 && nextCell < m_MAP_COLS * m_MAP_COLS - 1)
 				nextCell++;
 
-
-			if (!workingThread->TestDestroy()) {
-				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW, FIRST_DIM_EQ, std::to_string(i), animation::DEFAULT_DELAY, m_parentEventHandler);
-			}
-
-			else {
+			if (workingThread->TestDestroy()) {
 
 				workingThread->flagThreadBreak(true);
 				return false;
 
 			}
+
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW,
+				cellNum,
+				std::to_string(i),
+				animation::DEFAULT_DELAY,
+				m_parentEventHandler);
 
 			if ((*rowFilled)[ROW] == m_MAP_ROWS)
 				SudokuSolver::setRowFinished(ROW, true);
@@ -91,11 +93,9 @@ bool SudokuSolver::solveSudoku(int FIRST_DIM_EQ, AlgorithmThread* workingThread)
 				(*rowFilled)[ROW] --;
 				(*colFilled)[COL] --;
 
-				
-				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_WHITE, FIRST_DIM_EQ, "", animation::DEFAULT_DELAY, m_parentEventHandler);
+				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_WHITE, cellNum, "", animation::DEFAULT_DELAY, m_parentEventHandler);
 
-
-				//modifying whole row/col only if this change made it unfilled.
+				//setting whole rows/cols colour to white only if this change made it unfilled.
 				if ((*rowFilled)[ROW] == m_MAP_ROWS - 1)
 					SudokuSolver::setRowFinished(ROW, false);
 
@@ -113,19 +113,17 @@ bool SudokuSolver::solveSudoku(int FIRST_DIM_EQ, AlgorithmThread* workingThread)
 void SudokuSolver::generateValues(AlgorithmThread* workingThread) {
 
 	srand(time(NULL));
+	//filling squares in valid way
 	for (int i = 0; i < m_MAP_ROWS; i += m_DIAG_SQRT) {
 		SudokuSolver::generateValidSquare(i, i);
 	}
 
 	//generating valid values in remaining cells
-
 	SudokuSolver::generateRemainingValues(m_DIAG_SQRT);
 
 	//removing no. of filled cells depending on the difficulty
-
-
 	//difficulty describes number of unfilled cells
-	const int difficulty = 50;
+	const int difficulty = 20;
 
 	SudokuSolver::unFillCells(difficulty);
 
@@ -138,10 +136,14 @@ void SudokuSolver::printSudoku(AlgorithmThread* workingThread) {
 	{
 		for (int j = 0; j < m_MAP_COLS; j++)
 		{
-			const int FIRST_DIM_EQ = i * m_MAP_COLS + j;
+			const int cellNum = i * m_MAP_COLS + j;
 			const int value = (*sudokuMap)[i][j];
 			std::string updatedValue = value != -1 ? std::to_string(value) : "";
-			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_ONSTART, FIRST_DIM_EQ, updatedValue, 0, m_parentEventHandler);
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_ONSTART,
+				cellNum,
+				updatedValue,
+				0,
+				m_parentEventHandler);
 
 		}
 	}
@@ -170,17 +172,15 @@ void SudokuSolver::generateValidSquare(const int& ROW, const int& COL) {
 	}
 }
 
-//first dimension equivalent -> row * MAP_SIZE + col; ex. (2, 2) on 9x9 map is 2 * 9 + 2 = 20
+bool SudokuSolver::generateRemainingValues(const int& cellNum) {
 
-bool SudokuSolver::generateRemainingValues(const int& FIRST_DIM_EQ) {
-
-	if (FIRST_DIM_EQ >= m_MAP_ROWS * m_MAP_COLS - 1)
+	if (cellNum >= m_MAP_ROWS * m_MAP_COLS - 1)
 		return true;
 
 	//possible values are <1, m_MAP_SIZE>
 
-	const int ROW = FIRST_DIM_EQ / m_MAP_COLS;
-	const int COL = FIRST_DIM_EQ % m_MAP_COLS;
+	const int ROW = cellNum / m_MAP_COLS;
+	const int COL = cellNum % m_MAP_COLS;
 
 	for (int i = 1; i <= m_MAP_ROWS; i++) {
 
@@ -190,7 +190,7 @@ bool SudokuSolver::generateRemainingValues(const int& FIRST_DIM_EQ) {
 			(*rowFilled)[ROW] ++;
 			(*colFilled)[COL] ++;
 
-			int nextCell = FIRST_DIM_EQ + 1;
+			int nextCell = cellNum + 1;
 
 			while ((*inDiagonalSquare)[nextCell / m_MAP_COLS][nextCell % m_MAP_COLS] && nextCell < m_MAP_COLS * m_MAP_COLS - 1)
 				nextCell++;
@@ -214,7 +214,7 @@ void SudokuSolver::unFillCells(const int& NUM) {
 
 	int temp = NUM;
 	int randomValue;
-	while (temp != 0) {
+	while (temp) {
 
 		randomValue = rand() % (m_MAP_ROWS * m_MAP_COLS - 1);
 
@@ -273,16 +273,24 @@ void SudokuSolver::setRowFinished(const int& ROW, const bool& finished) {
 
 
 	for (int i = 0; i < m_MAP_COLS; i++) {
-		const int FIRST_DIM_EQ = ROW * m_MAP_COLS + i;
+		const int cellNum = ROW * m_MAP_COLS + i;
 		if ((*colFilled)[i] != m_MAP_COLS || finished) {
 			std::string updatedValue = (*sudokuMap)[ROW][i] != -1 ? std::to_string((*sudokuMap)[ROW][i]) : "";
 
 
 			if (finished)
-				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_GREEN, FIRST_DIM_EQ, updatedValue, 10, m_parentEventHandler);
+				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_GREEN,
+					cellNum,
+					updatedValue,
+					10,
+					m_parentEventHandler);
 
 			else
-				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_WHITE, FIRST_DIM_EQ, updatedValue, 10, m_parentEventHandler);
+				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_WHITE,
+					cellNum,
+					updatedValue,
+					10,
+					m_parentEventHandler);
 
 
 		}
@@ -291,18 +299,27 @@ void SudokuSolver::setRowFinished(const int& ROW, const bool& finished) {
 
 void SudokuSolver::setColFinished(const int& COL, const bool& finished) {
 
-	
+
 	for (int i = 0; i < m_MAP_ROWS; i++) {
-		const int FIRST_DIM_EQ = i * m_MAP_COLS + COL;
+		const int cellNum = i * m_MAP_COLS + COL;
 		if ((*rowFilled)[i] != m_MAP_ROWS || finished) {
 
 			std::string updatedValue = (*sudokuMap)[i][COL] != -1 ? std::to_string((*sudokuMap)[i][COL]) : "";
-			
+
 			if (finished)
-				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_GREEN, FIRST_DIM_EQ, updatedValue, 10, m_parentEventHandler);
+				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_GREEN,
+					cellNum,
+					updatedValue,
+					10,
+					m_parentEventHandler);
 
 			else
-				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_WHITE, FIRST_DIM_EQ, updatedValue, 10, m_parentEventHandler);
+				animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_WHITE,
+					cellNum,
+					updatedValue,
+					10,
+					m_parentEventHandler);
 		}
 	}
+
 }

@@ -10,7 +10,7 @@ public:
 	virtual void runAlgorithm(AlgorithmThread* workingThread) override;
 
 private:
-	std::unique_ptr<std::vector<int>> map;
+	std::unique_ptr<def_type::vector1DInt> map;
 	virtual void setSource(const int& t_newSource) override;
 	virtual void setDest(const int& t_newDest) override;
 	virtual bool isSafe(const int& x, const int& y) override;

@@ -14,9 +14,8 @@ void AStar::generateValues(AlgorithmThread* workingThread)
 	{
 		for (int j = 0; j < m_MAP_COLS; j++)
 		{
-			const int FIRST_DIM_EQ = i * m_MAP_COLS + j;
-			//animation_nodelay::cellSetup(FIRST_DIM_EQ, "", wxColour(255, 255, 255), m_parentEventHandler);
-			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_ONSTART, FIRST_DIM_EQ, "", 0, m_parentEventHandler);
+			const int cellNum = i * m_MAP_COLS + j;
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_ONSTART, cellNum, "", 0, m_parentEventHandler);
 		}
 	}
 }
@@ -48,7 +47,6 @@ void AStar::aStarSearch(AlgorithmThread* workingThread) {
 	//parent of a source is a source; all distances are 0.
 	finalPath[m_source] = { m_source, 0.0, 0.0, 0.0 };
 
-	//source has distance equal to 0.0; getting row and col num from first dimension equivalent;
 	calculatedDistances.push(std::make_tuple(0.0, m_source));
 
 
@@ -64,8 +62,11 @@ void AStar::aStarSearch(AlgorithmThread* workingThread) {
 		stream << std::fixed << std::setprecision(2) << cellDistance;
 		std::string truncCellDistance = stream.str();
 		
-		//animation::cellVisitedAnimation(cellNum, truncCellDistance, m_parentEventHandler);
-		animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW, cellNum, truncCellDistance, animation::DEFAULT_DELAY, m_parentEventHandler);
+		animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW, 
+			cellNum, 
+			truncCellDistance, 
+			animation::DEFAULT_DELAY, 
+			m_parentEventHandler);
 
 		calculatedDistances.pop();
 
@@ -119,8 +120,11 @@ void AStar::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread* 
 
 		if (!workingThread->TestDestroy()) {
 
-			//animation::cellPathToSourceAnimation(temp, "", m_parentEventHandler);
-			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_GREEN, temp, "", animation::DEFAULT_DELAY, m_parentEventHandler);
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_GREEN, 
+				temp, 
+				"", 
+				animation::DEFAULT_DELAY, 
+				m_parentEventHandler);
 
 			temp = finalPath[temp].parent;
 			wxMilliSleep(100);

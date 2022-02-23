@@ -16,7 +16,7 @@ void cBacktrackWindow::applyMapConfig()
 {
 	MapConfig KNIGHT_CONFIG = { 5, 5, "Knight's tour problem" };
 	MapConfig SUDOKU_CONFIG = { 9, 9, "Sudoku Solver" };
-	MapConfig RAT_CONFIG = { 7, 7, "Rat in a maze problem" };
+	MapConfig RAT_CONFIG = { 10, 10, "Rat in a maze problem" };
 
 	mapConfig.insert(std::make_pair(KNIGHT, KNIGHT_CONFIG));
 	mapConfig.insert(std::make_pair(SUDOKU, SUDOKU_CONFIG));
@@ -75,7 +75,7 @@ void cBacktrackWindow::setupMap()
 	}
 
 	frameContent = new wxPanel(this, wxID_ANY, wxDefaultPosition);
-	frameContent->SetBackgroundColour(wxColour(255, 255, 255));
+	frameContent->SetBackgroundColour(def_col::BLACK);
 
 	int t_MAP_ROWS = mapConfig[currentMapType].MAP_ROWS;
 	int t_MAP_COLS = mapConfig[currentMapType].MAP_COLS;
@@ -106,9 +106,8 @@ void cBacktrackWindow::setupToolbar()
 {
 	wxFont toolbarFont(15, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
 
-
 	algorithmTools = this->CreateToolBar(wxTB_HORIZONTAL, wxID_ANY);
-	algorithmTools->SetBackgroundColour(wxColour(255, 255, 255));
+	algorithmTools->SetBackgroundColour(def_col::WHITE);
 
 	algorithmChoice = new wxChoice(algorithmTools, wxID_ANY, wxDefaultPosition, wxSize(400, 500));
 	algorithmChoice->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &cBacktrackWindow::choiceSelected, this);
@@ -121,12 +120,12 @@ void cBacktrackWindow::setupToolbar()
 	startButton = new wxButton(algorithmTools, wxID_ANY, "Start", wxDefaultPosition, wxSize(400, 100));
 	startButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &cBacktrackWindow::onStart, this);
 	startButton->SetFont(toolbarFont);
-	startButton->SetBackgroundColour(wxColour(153, 204, 0));
+	startButton->SetBackgroundColour(def_col::GREEN);
 
 	sourceButton = new wxButton(algorithmTools, wxID_ANY, "Set source", wxDefaultPosition, wxSize(300, 100));
 	sourceButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &cBacktrackWindow::sourceSetButtonClicked, this);
 	sourceButton->SetFont(toolbarFont);
-	sourceButton->SetBackgroundColour(wxColour(255, 255, 0));
+	sourceButton->SetBackgroundColour(def_col::YELLOW);
 
 	//adding all controls
 	algorithmTools->AddControl(startButton);
@@ -147,6 +146,7 @@ void cBacktrackWindow::onStart(wxCommandEvent& evt)
 	case RUNNING:
 		cBacktrackWindow::stopAlgorithm();
 		break;
+
 	case FINISHED:
 		cBacktrackWindow::resetMap();
 		break;
@@ -163,7 +163,7 @@ void cBacktrackWindow::mapButtonClicked(wxCommandEvent& evt)
 		cBacktrackWindow::replaceSource(FIRST_DIM_EQ, (std::string)mapButtonClicked->GetLabelText());
 		cBacktrackWindow::setMapState(currentMapState = IDLE);
 		break;
-
+		
 	default:
 		break;
 	}
@@ -207,9 +207,6 @@ void cBacktrackWindow::setMapState(MAP_STATE t_mapState)
 		startButton->SetLabelText("Stop");
 		break;
 
-	case CHOOSING_SOURCE:
-		break;
-
 	case FINISHED:
 		cBacktrackWindow::enableMapButtons();
 		startButton->SetLabelText("Restart");
@@ -251,11 +248,11 @@ void cBacktrackWindow::replaceSource(const int t_newSource, const std::string t_
 {
 
 	if (mapSource != -1) {
-		mapButtons[mapSource]->SetBackgroundColour(wxColour(255, 255, 255));
+		mapButtons[mapSource]->SetBackgroundColour(def_col::WHITE);
 		mapButtons[mapSource]->SetLabelText(mapSourceValue);
 	}
 
-	mapButtons[t_newSource]->SetBackgroundColour(wxColour(153, 255, 255));
+	mapButtons[t_newSource]->SetBackgroundColour(def_col::BLUE);
 	mapButtons[t_newSource]->SetLabelText("Source");
 
 	if (t_newSource != mapSource) {

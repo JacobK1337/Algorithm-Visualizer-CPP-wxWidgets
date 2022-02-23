@@ -44,22 +44,17 @@ bool KTPImpl::findSolution(const int& x, const int& y, const int& numOfVisited, 
 {
 	const int FIRST_DIM_EQ = x * m_MAP_COLS + y;
 
-
-	if (!m_workingThread->TestDestroy())
-	{
-
-		animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW, 
-			FIRST_DIM_EQ, 
-			std::to_string(numOfVisited), 
-			animation::DEFAULT_DELAY, 
-			m_parentEventHandler);
-	}
-
-	else 
+	if (m_workingThread->TestDestroy())
 	{
 		m_workingThread->flagThreadBreak(true);
 		return false;
 	}
+
+	animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW,
+		FIRST_DIM_EQ,
+		std::to_string(numOfVisited),
+		animation::DEFAULT_DELAY,
+		m_parentEventHandler);
 
 	if (numOfVisited == m_MAP_ROWS * m_MAP_COLS)
 		return true;
@@ -71,6 +66,13 @@ bool KTPImpl::findSolution(const int& x, const int& y, const int& numOfVisited, 
 		if (isSafe(newX, newY, solution)) {
 			const int n_FIRST_DIM_EQ = newX * m_MAP_COLS + newY;
 			solution[newX][newY] = numOfVisited;
+			
+			//checking if thread is destroyed before each recursive call to make thread end it's work faster
+			if (m_workingThread->TestDestroy())
+			{
+				m_workingThread->flagThreadBreak(true);
+				return false;
+			}
 
 			if (KTPImpl::findSolution(newX, newY, numOfVisited + 1, solution, xShift, yShift))
 				return true;
@@ -99,7 +101,7 @@ void KTPImpl::generateValues(AlgorithmThread* workingThread)
 			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_ONSTART,
 				FIRST_DIM_EQ,
 				"",
-				animation::DEFAULT_DELAY,
+				0,
 				m_parentEventHandler);
 		}
 }

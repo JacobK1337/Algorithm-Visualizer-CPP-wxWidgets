@@ -14,8 +14,12 @@ void DFSimpl::generateValues(AlgorithmThread* workingThread)
 	{
 		for (int j = 0; j < m_MAP_COLS; j++)
 		{
-			const int FIRST_DIM_EQ = i * m_MAP_COLS + j;
-			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_ONSTART, FIRST_DIM_EQ, "", 0, m_parentEventHandler);
+			const int cellNum = i * m_MAP_COLS + j;
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_ONSTART, 
+				cellNum, 
+				"", 
+				0, 
+				m_parentEventHandler);
 		}
 	}
 }
@@ -49,7 +53,11 @@ void DFSimpl::dfs(const int& src, std::vector<cellInfo>& finalPath, def_type::ve
 
 	if (src != m_source && !workingThread->TestDestroy()) {
 
-		animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW, src, std::to_string(finalPath[src].when), animation::DEFAULT_DELAY, m_parentEventHandler);
+		animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_YELLOW, 
+			src, 
+			std::to_string(finalPath[src].when), 
+			animation::DEFAULT_DELAY, 
+			m_parentEventHandler);
 
 	}
 
@@ -94,8 +102,11 @@ void DFSimpl::showPathToSource(std::vector<cellInfo>& finalPath, AlgorithmThread
 
 		if (!workingThread->TestDestroy()) {
 			
-			//animation::cellPathToSourceAnimation(temp, "", m_parentEventHandler);
-			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_GREEN, temp, "", animation::DEFAULT_DELAY, m_parentEventHandler);
+			animation::cellColorTransition(animation::DEFAULT_COLOR_TRANS_GREEN, 
+				temp, 
+				"", 
+				animation::DEFAULT_DELAY, 
+				m_parentEventHandler);
 
 			if (finalPath[temp].parent == -1)
 				return;

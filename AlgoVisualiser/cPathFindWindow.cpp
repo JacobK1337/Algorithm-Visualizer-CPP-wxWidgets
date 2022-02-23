@@ -38,7 +38,7 @@ void cPathFindWindow::setupMap() {
 	}
 
 	frameContent = new wxPanel(this, wxID_ANY, wxDefaultPosition);
-	frameContent->SetBackgroundColour(wxColour(255, 255, 255));
+	frameContent->SetBackgroundColour(def_col::BLACK);
 
 	mapSource = -1;
 	mapDest = -1;
@@ -74,7 +74,7 @@ void cPathFindWindow::setupToolbar() {
 	wxFont toolbarFont(15, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
 
 	algorithmTools = this->CreateToolBar(wxTB_HORIZONTAL, wxID_ANY);
-	algorithmTools->SetBackgroundColour(wxColour(255, 255, 255));
+	algorithmTools->SetBackgroundColour(def_col::WHITE);
 
 	algorithmChoice = new wxChoice(algorithmTools, wxID_ANY, wxDefaultPosition, wxSize(400, 500));
 	algorithmChoice->Bind(wxEVT_COMMAND_CHOICE_SELECTED, &cPathFindWindow::choiceSelected, this);
@@ -87,17 +87,17 @@ void cPathFindWindow::setupToolbar() {
 	startButton = new wxButton(algorithmTools, wxID_ANY, "Start", wxDefaultPosition, wxSize(400, 100));
 	startButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &cPathFindWindow::onStart, this);
 	startButton->SetFont(toolbarFont);
-	startButton->SetBackgroundColour(wxColour(153, 204, 0));
+	startButton->SetBackgroundColour(def_col::GREEN);
 
 	sourceButton = new wxButton(algorithmTools, wxID_ANY, "Set source", wxDefaultPosition, wxSize(300, 100));
 	sourceButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &cPathFindWindow::sourceSetButtonClicked, this);
 	sourceButton->SetFont(toolbarFont);
-	sourceButton->SetBackgroundColour(wxColour(255, 255, 0));
+	sourceButton->SetBackgroundColour(def_col::YELLOW);
 
 	destButton = new wxButton(algorithmTools, wxID_ANY, "Set destination", wxDefaultPosition, wxSize(300, 100));
 	destButton->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &cPathFindWindow::destSetButtonClicked, this);
 	destButton->SetFont(toolbarFont);
-	destButton->SetBackgroundColour(wxColour(51, 51, 255));
+	destButton->SetBackgroundColour(def_col::VIOLET);
 
 	algorithmTools->AddControl(startButton);
 	algorithmTools->AddStretchableSpace();
@@ -114,7 +114,7 @@ void cPathFindWindow::choiceSelected(wxCommandEvent& evt) {
 	wxChoice* currentChoice = (wxChoice*)evt.GetEventObject();
 	int selected = currentChoice->GetCurrentSelection();
 
-	MAP_TYPE selectedMapType = MAP_TYPE(MAP_TYPE_START + selected + 1);//mapTypeMapping[selected];
+	MAP_TYPE selectedMapType = MAP_TYPE(MAP_TYPE_START + selected + 1);
 
 	currentMapType = selectedMapType;
 
@@ -188,11 +188,11 @@ void cPathFindWindow::rightButtonClicked(wxMouseEvent& evt) {
 
 	switch (mapButtonBlocked[buttonId]) {
 	case false:
-		mapButtonClicked->SetBackgroundColour(def_col::BLOCK_COLOUR);
+		mapButtonClicked->SetBackgroundColour(def_col::BLACK);
 		mapButtonBlocked[buttonId] = true;
 		break;
 	case true:
-		mapButtonClicked->SetBackgroundColour(def_col::IDLE_COLOUR);
+		mapButtonClicked->SetBackgroundColour(def_col::WHITE);
 		mapButtonBlocked[buttonId] = false;
 		break;
 
@@ -356,9 +356,6 @@ void cPathFindWindow::setMapState(MAP_STATE t_mapState) {
 		startButton->SetLabelText("Stop");
 		break;
 
-	case CHOOSING_SOURCE:
-		break;
-
 	case FINISHED:
 		cPathFindWindow::enableMapButtons();
 		startButton->SetLabelText("Restart");
@@ -370,12 +367,12 @@ void cPathFindWindow::replaceSource(const int t_newSource, const std::string t_n
 
 
 	if (mapSource != -1) {
-		mapButtons[mapSource]->SetBackgroundColour(def_col::IDLE_COLOUR);
+		mapButtons[mapSource]->SetBackgroundColour(def_col::WHITE);
 		mapButtons[mapSource]->SetLabelText(mapSourceValue);
 	}
 
 
-	mapButtons[t_newSource]->SetBackgroundColour(def_col::SOURCE_COLOUR);
+	mapButtons[t_newSource]->SetBackgroundColour(def_col::BLUE);
 	mapButtons[t_newSource]->SetLabelText("Source");
 
 	if (t_newSource != mapSource) {
@@ -387,11 +384,11 @@ void cPathFindWindow::replaceSource(const int t_newSource, const std::string t_n
 void cPathFindWindow::replaceDest(const int t_newDest, const std::string t_newDestValue) {
 
 	if (mapDest != -1) {
-		mapButtons[mapDest]->SetBackgroundColour(def_col::IDLE_COLOUR);
+		mapButtons[mapDest]->SetBackgroundColour(def_col::WHITE);
 		mapButtons[mapDest]->SetLabelText(mapDestValue);
 	}
 
-	mapButtons[t_newDest]->SetBackgroundColour(def_col::SOURCE_COLOUR);
+	mapButtons[t_newDest]->SetBackgroundColour(def_col::BLUE);
 	mapButtons[t_newDest]->SetLabelText("Dest");
 
 	if (t_newDest != mapDest) {
