@@ -15,8 +15,8 @@ Algorithms implemented at the moment are:
 - **Knight's tour problem**
 
 # How it works
-###  To completely separate the direct operations of algorithms on GUI elements, the operation is based on the communication of the executing thread with the thread responsible for the GUI. Such communication is of course provided by the wxWidgets library, which was used for the visual part of the project.
-### More information on inter-thread communication in wxWidgets can be found there: 
+####  To completely separate the direct operations of algorithms on GUI elements, the operation is based on the communication of the executing thread with the thread responsible for the GUI. Such communication is of course provided by the wxWidgets library, which was used for the visual part of the project.
+#### More information on inter-thread communication in wxWidgets can be found there: 
 ### [Inter-Thread and Inter-Process communication](https://wiki.wxwidgets.org/Inter-Thread_and_Inter-Process_communication)
 
 # Time complexity
