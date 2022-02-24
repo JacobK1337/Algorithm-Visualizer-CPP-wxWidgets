@@ -1,4 +1,28 @@
-# Algorithm-Visualiser
+# Algorithm Visualiser in C++
+### Algorithm visualiser created using C++14 and wxWidgets 3.1.5.
+![image](https://user-images.githubusercontent.com/81765291/155283868-c2dc4094-0b2c-4fa6-a880-a13f7fb93b60.png)
+# Contents
+### The goal of this project was to visualize how pathfinding and backtracking algorithms work. 
+Algorithms implemented at the moment are:
+- **Dijkstra Shortest Path algorithm**
+- **Depth-First Search algorithm**
+- **Breadth-First Search algorithm**
+- **A-Star algorithm**
+- **Sudoku Solver**
+- **Rat in a maze problem**
+- **Knight's tour problem**
+# How it works
+####  To completely separate the direct operations of algorithms on GUI elements, the operation is based on the communication of the executing thread with the thread responsible for the GUI. Such communication is of course provided by the wxWidgets library, which was used for the visual part of the project.
+#### More information on inter-thread communication in wxWidgets can be found there: 
+### [Inter-Thread and Inter-Process communication](https://wiki.wxwidgets.org/Inter-Thread_and_Inter-Process_communication)
+# Time complexity
+- **Dijkstra Shortest Path algorithm:** ![lagrida_latex_editor](https://user-images.githubusercontent.com/81765291/155402900-88ccfb7d-a4be-470a-97cc-d41b30c98648.png)
+- **Depth-First Search algorithm:** ![lagrida_latex_editor (1)](https://user-images.githubusercontent.com/81765291/155403391-be2e0f48-19c8-40fc-8b3a-1c9ad7a2c196.png)
+- **Breadth-First Search algorithm:** ![lagrida_latex_editor (1)](https://user-images.githubusercontent.com/81765291/155403396-c463b6a5-39c7-4d83-b7c5-3559e5abdf21.png)
+- **A-Star algorithm:** ![lagrida_latex_editor (2)](https://user-images.githubusercontent.com/81765291/155403619-823355ee-056c-40ff-84b4-9c3953bbfe55.png)
+- **Sudoku Solver:** ![lagrida_latex_editor (3)](https://user-images.githubusercontent.com/81765291/155403772-cbd4c29d-5004-4036-a88f-cd3022e486e5.png)
+- **Rat in a maze problem:** ![lagrida_latex_editor (4)](https://user-images.githubusercontent.com/81765291/155403873-d6c758ff-81d2-497d-aed6-faa6de4aeba7.png)
+- **Knight's tour problem:** ![lagrida_latex_editor (5)](https://user-images.githubusercontent.com/81765291/155404008-1683cd4c-937e-4986-b15a-90bfefe37911.png)
 
 # Presentation
 #### An animation mechanism has been implemented in the project, which relies on a smoother transition of the board colors. The gifs below are recorded in 15 FPS.
