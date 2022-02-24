@@ -30,6 +30,7 @@ Algorithms implemented at the moment are:
 
 
 # Presentation
+#### An animation mechanism has been implemented in the project, which relies on a smoother transition of the board colors. The gifs below are recorded in 15 FPS.
 
 ## A* algorithm
 #### This pathfinding algorithm is very similar to Dijkstra Shortest Path Algorithm. Major difference is that it uses *heuristic* value in order to determine wheter the path is profitable to choose. In this implementation the heuristics are expressed by segment length in the coordinate system. The main action is based on *priority_queue* from C++ standard library. Cell with the smallest cost to reach is chosen each time.
